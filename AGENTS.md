@@ -90,3 +90,22 @@ Sempre seguir esta ordem:
 4. implementar
 5. validar manualmente o fluxo principal
 6. relatar o que foi criado e o que ficou pendente
+
+## Diretriz de layout e experiência
+- seguir uma linguagem visual inspirada no GitHub
+- priorizar clareza, legibilidade e densidade informacional equilibrada
+- usar layout limpo, técnico e pragmático
+- suportar tema claro e escuro
+- usar superfícies com bordas sutis em vez de blocos pesados
+- destacar títulos e ações principais
+- manter metadados com contraste secundário
+- evitar visual chamativo ou excesso de elementos decorativos
+- toda interface deve parecer uma ferramenta de produtividade para engenharia
+
+## Diretriz de componentes de interface
+- toda ação clicável principal deve usar componente reutilizável de botão
+- evitar estilização manual repetida de botões
+- descrições de Pull Request devem ser renderizadas em modo preview de Markdown, nunca como texto cru
+- exibir avatar do autor em listas e detalhes sempre que disponível
+- manter linguagem visual inspirada no GitHub
+- priorizar contraste, legibilidade e hierarquia visual

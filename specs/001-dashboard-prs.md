@@ -35,3 +35,10 @@ Permitir que o usuário visualize rapidamente sua fila de PRs para revisão.
 - análise por IA
 - aprovação de sugestões
 - publicação de comentários
+
+## Diretrizes de interface
+- usar layout inspirado no GitHub
+- suportar tema claro e escuro
+- exibir os PRs em cards ou linhas com borda sutil
+- destacar visualmente o título do PR
+- exibir metadados com contraste secundário
