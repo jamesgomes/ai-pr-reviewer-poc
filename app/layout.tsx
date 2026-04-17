@@ -1,4 +1,5 @@
 import "./globals.css";
+import { AppHeader } from "@/components/app-header";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
@@ -9,7 +10,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className="min-h-screen">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <div className="min-h-screen bg-white dark:bg-zinc-950">
+            <AppHeader />
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

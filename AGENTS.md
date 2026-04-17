@@ -109,3 +109,25 @@ Sempre seguir esta ordem:
 - exibir avatar do autor em listas e detalhes sempre que disponível
 - manter linguagem visual inspirada no GitHub
 - priorizar contraste, legibilidade e hierarquia visual
+
+## Diretriz de estados de carregamento
+- estados de loading devem usar componente visual reutilizável em SVG
+- evitar mensagens textuais simples de carregamento quando houver componente padrão disponível
+- usar loading.tsx do App Router para feedback de navegação quando fizer sentido
+- exibir contexto do usuário autenticado na home com avatar, nome e login
+
+## Diretriz de shell global
+- a aplicação deve possuir um header global inspirado no GitHub
+- elementos globais como branding, busca, toggle de tema e avatar do usuário devem ficar no header
+- páginas devem focar no conteúdo principal e evitar duplicação de elementos globais
+
+## Diretriz temporária do header
+- enquanto a busca não tiver valor funcional real, não exibir campo de pesquisa no header
+- no lado direito do header exibir apenas toggle de tema, avatar e nome do usuário autenticado
+- evitar elementos decorativos ou funcionais incompletos no shell global
+
+## Diretriz de análise com IA
+- toda análise de PR deve retornar estrutura previsível e tipada
+- evitar respostas livres ou narrativas sem formato
+- priorizar sugestões acionáveis e objetivas
+- não gerar comentários automaticamente no GitHub sem fluxo de aprovação posterior

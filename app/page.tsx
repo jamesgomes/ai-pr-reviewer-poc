@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PullRequestAuthor } from "@/components/pr-author";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { buttonVariants } from "@/components/ui/button";
+import { PullRequestListItemRow } from "@/components/pull-request-list-item";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type {
   ApiErrorResponse,
   PullRequestListItem,
@@ -15,7 +13,10 @@ type DashboardState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "empty" }
-  | { status: "loaded"; pullRequests: PullRequestListItem[] };
+  | {
+      status: "loaded";
+      pullRequests: PullRequestListItem[];
+    };
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -23,17 +24,6 @@ function toErrorMessage(error: unknown): string {
   }
 
   return "Nao foi possivel carregar os PRs.";
-}
-
-function formatUpdatedAt(value: string): string {
-  return new Date(value).toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-}
-
-function toPullRequestDetailsPath(pullRequest: PullRequestListItem): string {
-  return `/pull-requests/${encodeURIComponent(pullRequest.repositoryOwner)}/${encodeURIComponent(pullRequest.repositoryName)}/${pullRequest.number}`;
 }
 
 export default function HomePage() {
@@ -68,7 +58,10 @@ export default function HomePage() {
           setState(
             payload.pullRequests.length === 0
               ? { status: "empty" }
-              : { status: "loaded", pullRequests: payload.pullRequests }
+              : {
+                  status: "loaded",
+                  pullRequests: payload.pullRequests,
+                }
           );
         }
       } catch (error: unknown) {
@@ -90,7 +83,7 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-      <header className="mb-5 flex items-start justify-between gap-4 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+      <header className="mb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
             Pull requests para revisao
@@ -99,13 +92,12 @@ export default function HomePage() {
             PRs abertos onde voce foi solicitado como reviewer.
           </p>
         </div>
-        <ThemeToggle />
       </header>
 
       {state.status === "loading" && (
-        <p className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-          Carregando PRs pendentes...
-        </p>
+        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <LoadingSpinner label="Atualizando fila de PRs..." />
+        </div>
       )}
 
       {state.status === "error" && (
@@ -121,38 +113,9 @@ export default function HomePage() {
       )}
 
       {state.status === "loaded" && (
-        <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950">
+        <ul className="overflow-hidden rounded-md border border-zinc-200 bg-white divide-y divide-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:divide-zinc-800">
           {state.pullRequests.map((pullRequest) => (
-            <li key={pullRequest.id} className="p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <Link
-                    href={toPullRequestDetailsPath(pullRequest)}
-                    className="rounded-sm text-base font-semibold text-zinc-900 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 dark:text-zinc-100 dark:hover:text-blue-400"
-                  >
-                    {pullRequest.title}
-                  </Link>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <p>
-                      Repositorio: {pullRequest.repositoryOwner}/{pullRequest.repositoryName}
-                    </p>
-                    <p>PR #{pullRequest.number}</p>
-                    <p>Atualizado em: {formatUpdatedAt(pullRequest.updatedAt)}</p>
-                    <PullRequestAuthor
-                      login={pullRequest.authorLogin}
-                      avatarUrl={pullRequest.authorAvatarUrl}
-                    />
-                  </div>
-                </div>
-
-                <Link
-                  href={toPullRequestDetailsPath(pullRequest)}
-                  className={buttonVariants("ghost")}
-                >
-                  Ver detalhes
-                </Link>
-              </div>
-            </li>
+            <PullRequestListItemRow key={pullRequest.id} pullRequest={pullRequest} />
           ))}
         </ul>
       )}

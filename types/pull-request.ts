@@ -2,6 +2,8 @@ export type PullRequestListItem = {
   id: number;
   number: number;
   title: string;
+  state: "open" | "closed";
+  commentCount: number;
   repositoryName: string;
   repositoryOwner: string;
   authorLogin: string;
@@ -12,7 +14,6 @@ export type PullRequestListItem = {
 
 export type PullRequestDetail = PullRequestListItem & {
   body: string | null;
-  state: "open" | "closed";
 };
 
 export type PullRequestListResponse = {
