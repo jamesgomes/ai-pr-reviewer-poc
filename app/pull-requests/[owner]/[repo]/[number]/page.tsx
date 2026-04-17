@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PullRequestAuthor } from "@/components/pr-author";
-import { PullRequestAnalysisSection } from "@/components/pr-analysis-section";
+import { PullRequestAnalysisSectionClient } from "@/components/pr-analysis-section-client";
 import { PullRequestMarkdownPreview } from "@/components/pr-markdown-preview";
 import { buttonVariants } from "@/components/ui/button";
 import { getPullRequestDetails } from "@/lib/pull-requests";
@@ -150,7 +150,8 @@ export default async function PullRequestDetailsPage({
         </div>
       </section>
 
-      <PullRequestAnalysisSection
+      <PullRequestAnalysisSectionClient
+        key={`${pullRequest.repositoryOwner}/${pullRequest.repositoryName}/${pullRequest.number}`}
         owner={pullRequest.repositoryOwner}
         repo={pullRequest.repositoryName}
         pullNumber={pullRequest.number}

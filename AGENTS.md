@@ -131,3 +131,9 @@ Sempre seguir esta ordem:
 - evitar respostas livres ou narrativas sem formato
 - priorizar sugestões acionáveis e objetivas
 - não gerar comentários automaticamente no GitHub sem fluxo de aprovação posterior
+
+## Diretriz de persistência na POC
+- nesta fase, análises e decisões do usuário devem ser persistidas localmente no navegador
+- usar localStorage para preservar progresso entre recarregamentos
+- evitar banco de dados antes da validação funcional da POC
+- toda persistência deve ser isolada em helpers ou serviços dedicados

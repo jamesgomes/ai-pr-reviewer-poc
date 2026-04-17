@@ -42,7 +42,13 @@ export async function POST(
     );
     const prompt = buildPullRequestAnalysisPrompt(context);
     const analysis = await analyzePullRequestWithOpenAI(prompt);
-    const payload: PullRequestAnalysisResponse = { analysis };
+    const payload: PullRequestAnalysisResponse = {
+      analysis,
+      codeContextFiles: context.files.map((file) => ({
+        filePath: file.filePath,
+        patch: file.patch,
+      })),
+    };
 
     return Response.json(payload);
   } catch (error: unknown) {

@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI PR Reviewer POC
 
-## Getting Started
+POC local para apoiar revisao de Pull Requests com IA.
 
-First, run the development server:
+## Objetivo
+
+- Buscar PRs em que o usuario foi solicitado como reviewer.
+- Permitir abrir o detalhe do PR.
+- Rodar analise de PR com IA sob demanda.
+- Exibir resumo e sugestoes estruturadas para revisao.
+
+## Stack
+
+- Next.js (App Router)
+- React + TypeScript
+- Tailwind CSS
+- Octokit (GitHub)
+- OpenAI SDK (somente no servidor)
+- Zod (validacao e structured output)
+- MongoDB local (preparado para as proximas specs)
+
+## Funcionalidades implementadas
+
+- Home com lista de PRs pendentes de revisao.
+- Tela de detalhe do PR com descricao em markdown preview.
+- Botao "Analisar com IA" no detalhe do PR.
+- Execucao da analise no backend.
+- Exibicao de estados de loading, erro e sucesso.
+- Resposta tipada da IA com `summary` e `suggestions[]`.
+- Cada `suggestion` contem `id`, `severity`, `category`, `title`, `description`, `suggestedComment`, `filePath`, `line`.
+
+## Variaveis de ambiente
+
+Crie um arquivo `.env.local` na raiz:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+GITHUB_TOKEN=seu_token_github
+GITHUB_USERNAME=seu_login_github
+
+MONGODB_URI=mongodb://127.0.0.1:27017/ai-pr-reviewer-poc
+MONGODB_DB=ai-pr-reviewer-poc
+
+OPENAI_API_KEY=sua_chave_openai
+OPENAI_MODEL=gpt-5.2
+
+NEXT_PUBLIC_APP_NAME=AI PR Reviewer POC
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Notas:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `OPENAI_MODEL` e opcional. Se nao for definido, o sistema usa `gpt-5.2`.
+- Nao exponha tokens e chaves no cliente.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Prompt da analise de IA
 
-## Learn More
+- Instrucoes da IA: `docs/prompts/pr-analysis-instructions.md`
+- Montagem do contexto/prompt: `lib/prompts/pr-analysis.ts`
+- Chamada OpenAI: `lib/openai.ts`
+- Schema tipado de saida: `types/pr-analysis.ts`
 
-To learn more about Next.js, take a look at the following resources:
+## Rodando localmente
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Abra `http://localhost:3000`.
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev`: sobe ambiente local.
+- `npm run lint`: executa lint.
+- `npm run build`: valida build de producao.
+- `npm run start`: sobe app apos build.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Rotas principais
+
+- `GET /`: dashboard com PRs pendentes.
+- `GET /pull-requests/[owner]/[repo]/[number]`: detalhe do PR.
+- `GET /api/pull-requests`: lista PRs solicitados para review.
+- `POST /api/pull-requests/[owner]/[repo]/[number]/analyze`: executa analise com IA.
+- `GET /api/health`: healthcheck simples.
+
+## Estrutura de pastas
+
+- `app/`: paginas e rotas (App Router).
+- `components/`: componentes de UI.
+- `lib/`: integracoes e servicos (GitHub, OpenAI, prompts).
+- `types/`: contratos e tipos compartilhados.
+- `specs/`: especificacoes que guiam a implementacao.
+- `docs/`: documentacao auxiliar (inclui prompts).
+
+## Limites desta fase (POC)
+
+- Nao ha aprovacao/rejeicao/edicao de sugestoes ainda.
+- Nao publica comentarios no GitHub nesta versao.
+- Nao ha persistencia historica da analise no MongoDB nesta etapa.
+- Nao cobre processamento em background ou multiusuario.

@@ -1,27 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { PullRequestSuggestionItem } from "@/components/pr-suggestion-item";
+import {
+  readPersistedPullRequestAnalysis,
+  writePersistedPullRequestAnalysis,
+} from "@/lib/storage/pr-analysis-storage";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type {
+  PullRequestAnalysisCodeContextFile,
   PullRequestAnalysisErrorResponse,
   PullRequestAnalysisResponse,
-  PullRequestAnalysisResult,
-  PullRequestAnalysisSeverity,
-  PullRequestAnalysisSuggestion,
+  PullRequestReviewSuggestion,
+  PullRequestSuggestionFilter,
+  PullRequestSuggestionStatus,
 } from "@/types/pr-analysis";
 
 type PullRequestAnalysisSectionProps = {
   owner: string;
   repo: string;
   pullNumber: number;
-};
-
-const severityBadgeClassName: Record<PullRequestAnalysisSeverity, string> = {
-  low: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
-  medium:
-    "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300",
-  high: "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300",
 };
 
 function toErrorMessage(error: unknown): string {
@@ -32,48 +31,76 @@ function toErrorMessage(error: unknown): string {
   return "Erro desconhecido ao analisar o PR.";
 }
 
-function SuggestionCard({
-  suggestion,
-}: {
-  suggestion: PullRequestAnalysisSuggestion;
-}) {
-  return (
-    <li className="rounded-md border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="flex flex-wrap items-center gap-2">
-        <span
-          className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${severityBadgeClassName[suggestion.severity]}`}
-        >
-          {suggestion.severity}
-        </span>
-        <span className="inline-flex rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-          {suggestion.category}
-        </span>
-      </div>
+function toReviewSuggestions(
+  payload: PullRequestAnalysisResponse["analysis"]["suggestions"]
+): PullRequestReviewSuggestion[] {
+  return payload.map((suggestion) => ({
+    ...suggestion,
+    status: "pending",
+    editedComment: null,
+  }));
+}
 
-      <h4 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-        {suggestion.title}
-      </h4>
+function toPatchMap(
+  codeContextFiles: PullRequestAnalysisResponse["codeContextFiles"]
+): Record<string, string | null> {
+  return codeContextFiles.reduce<Record<string, string | null>>((accumulator, file) => {
+    accumulator[file.filePath] = file.patch;
+    return accumulator;
+  }, {});
+}
 
-      {(suggestion.filePath !== null || suggestion.line !== null) && (
-        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-          {suggestion.filePath !== null ? suggestion.filePath : "Arquivo nao informado"}
-          {suggestion.line !== null ? `:${suggestion.line}` : ""}
-        </p>
-      )}
+function toCodeContextFiles(
+  codeContextPatchesByFilePath: Record<string, string | null>
+): PullRequestAnalysisCodeContextFile[] {
+  return Object.entries(codeContextPatchesByFilePath).map(([filePath, patch]) => ({
+    filePath,
+    patch,
+  }));
+}
 
-      <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-        {suggestion.description}
-      </p>
+function formatSavedAt(value: string): string {
+  const parsedDate = new Date(value);
 
-      <div className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Comentario sugerido
-        </p>
-        <p className="mt-2 text-sm leading-6 text-zinc-800 dark:text-zinc-200">
-          {suggestion.suggestedComment}
-        </p>
-      </div>
-    </li>
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "data invalida";
+  }
+
+  return parsedDate.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+type SuggestionCounters = {
+  pending: number;
+  approved: number;
+  rejected: number;
+};
+
+const suggestionFilterOptions: Array<{
+  value: PullRequestSuggestionFilter;
+  label: string;
+}> = [
+  { value: "all", label: "Todas" },
+  { value: "pending", label: "Pendentes" },
+  { value: "approved", label: "Aprovadas" },
+  { value: "rejected", label: "Rejeitadas" },
+];
+
+function calculateSuggestionCounters(
+  suggestions: PullRequestReviewSuggestion[]
+): SuggestionCounters {
+  return suggestions.reduce<SuggestionCounters>(
+    (counters, suggestion) => {
+      counters[suggestion.status] += 1;
+      return counters;
+    },
+    {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    }
   );
 }
 
@@ -82,9 +109,53 @@ export function PullRequestAnalysisSection({
   repo,
   pullNumber,
 }: PullRequestAnalysisSectionProps) {
-  const [analysis, setAnalysis] = useState<PullRequestAnalysisResult | null>(null);
+  const [persistedAnalysisOnMount] = useState(() =>
+    readPersistedPullRequestAnalysis({
+      owner,
+      repo,
+      pullNumber,
+    })
+  );
+  const [analysisSummary, setAnalysisSummary] = useState<string | null>(
+    persistedAnalysisOnMount?.analysisSummary ?? null
+  );
+  const [reviewSuggestions, setReviewSuggestions] = useState<PullRequestReviewSuggestion[]>(
+    persistedAnalysisOnMount?.reviewSuggestions ?? []
+  );
+  const [codeContextPatchesByFilePath, setCodeContextPatchesByFilePath] = useState<
+    Record<string, string | null>
+  >(persistedAnalysisOnMount ? toPatchMap(persistedAnalysisOnMount.codeContextFiles) : {});
+  const [activeFilter, setActiveFilter] = useState<PullRequestSuggestionFilter>("all");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(
+    persistedAnalysisOnMount?.savedAt ?? null
+  );
+
+  function persistLocalAnalysis(
+    nextAnalysisSummary: string,
+    nextSuggestions: PullRequestReviewSuggestion[],
+    nextCodeContextPatchesByFilePath: Record<string, string | null>
+  ) {
+    const savedAt = new Date().toISOString();
+    const didPersist = writePersistedPullRequestAnalysis(
+      {
+        owner,
+        repo,
+        pullNumber,
+      },
+      {
+        analysisSummary: nextAnalysisSummary,
+        reviewSuggestions: nextSuggestions,
+        codeContextFiles: toCodeContextFiles(nextCodeContextPatchesByFilePath),
+        savedAt,
+      }
+    );
+
+    if (didPersist) {
+      setLastSavedAt(savedAt);
+    }
+  }
 
   async function handleAnalyzePullRequest() {
     setIsAnalyzing(true);
@@ -108,17 +179,79 @@ export function PullRequestAnalysisSection({
         throw new Error(message);
       }
 
-      if (!("analysis" in payload)) {
+      if (!("analysis" in payload) || !("codeContextFiles" in payload)) {
         throw new Error("Resposta invalida da API de analise.");
       }
 
-      setAnalysis(payload.analysis);
+      const nextAnalysisSummary = payload.analysis.summary;
+      const nextReviewSuggestions = toReviewSuggestions(payload.analysis.suggestions);
+      const nextCodeContextPatchesByFilePath = toPatchMap(payload.codeContextFiles);
+
+      setAnalysisSummary(nextAnalysisSummary);
+      setReviewSuggestions(nextReviewSuggestions);
+      setCodeContextPatchesByFilePath(nextCodeContextPatchesByFilePath);
+      setActiveFilter("all");
+      persistLocalAnalysis(
+        nextAnalysisSummary,
+        nextReviewSuggestions,
+        nextCodeContextPatchesByFilePath
+      );
     } catch (error: unknown) {
       setErrorMessage(`Nao foi possivel executar a analise. ${toErrorMessage(error)}`);
     } finally {
       setIsAnalyzing(false);
     }
   }
+
+  function updateSuggestionStatus(id: string, status: PullRequestSuggestionStatus) {
+    setReviewSuggestions((currentSuggestions) => {
+        const nextSuggestions = currentSuggestions.map((suggestion) =>
+          suggestion.id === id
+            ? {
+                ...suggestion,
+                status,
+              }
+            : suggestion
+        );
+
+        if (analysisSummary) {
+          persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
+        }
+
+        return nextSuggestions;
+      });
+  }
+
+  function saveEditedComment(id: string, editedComment: string) {
+    setReviewSuggestions((currentSuggestions) => {
+        const nextSuggestions = currentSuggestions.map((suggestion) =>
+          suggestion.id === id
+            ? {
+                ...suggestion,
+                editedComment,
+              }
+            : suggestion
+        );
+
+        if (analysisSummary) {
+          persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
+        }
+
+        return nextSuggestions;
+      });
+  }
+
+  const suggestionCounters = calculateSuggestionCounters(reviewSuggestions);
+  const filteredSuggestions =
+    activeFilter === "all"
+      ? reviewSuggestions
+      : reviewSuggestions.filter((suggestion) => suggestion.status === activeFilter);
+  const filterCountByValue: Record<PullRequestSuggestionFilter, number> = {
+    all: reviewSuggestions.length,
+    pending: suggestionCounters.pending,
+    approved: suggestionCounters.approved,
+    rejected: suggestionCounters.rejected,
+  };
 
   return (
     <section className="mt-4 rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
@@ -153,36 +286,81 @@ export function PullRequestAnalysisSection({
           </p>
         )}
 
-        {!analysis && !isAnalyzing && !errorMessage && (
+        {!analysisSummary && !isAnalyzing && !errorMessage && (
           <p className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
             Nenhuma analise executada ainda.
           </p>
         )}
 
-        {analysis && (
+        {analysisSummary && (
           <div className="space-y-4">
             <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Resumo
               </h3>
               <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                {analysis.summary}
+                {analysisSummary}
               </p>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Sugestoes ({analysis.suggestions.length})
+                Sugestoes ({reviewSuggestions.length})
               </h3>
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                Pendentes: {suggestionCounters.pending} · Aprovadas: {suggestionCounters.approved} ·
+                Rejeitadas: {suggestionCounters.rejected}
+              </p>
+              {lastSavedAt && (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  Ultima analise salva localmente em {formatSavedAt(lastSavedAt)}.
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {suggestionFilterOptions.map((filterOption) => {
+                  const isActive = activeFilter === filterOption.value;
 
-              {analysis.suggestions.length === 0 ? (
+                  return (
+                    <Button
+                      key={filterOption.value}
+                      variant="secondary"
+                      onClick={() => {
+                        setActiveFilter(filterOption.value);
+                      }}
+                      className={
+                        isActive
+                          ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                          : undefined
+                      }
+                    >
+                      {filterOption.label} ({filterCountByValue[filterOption.value]})
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {reviewSuggestions.length === 0 ? (
                 <p className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
                   Nenhuma sugestao relevante foi identificada para este PR.
                 </p>
+              ) : filteredSuggestions.length === 0 ? (
+                <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                  Nenhuma sugestao encontrada para o filtro selecionado.
+                </p>
               ) : (
                 <ul className="mt-3 space-y-3">
-                  {analysis.suggestions.map((suggestion) => (
-                    <SuggestionCard key={suggestion.id} suggestion={suggestion} />
+                  {filteredSuggestions.map((suggestion) => (
+                    <PullRequestSuggestionItem
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      codePatch={
+                        suggestion.filePath !== null
+                          ? (codeContextPatchesByFilePath[suggestion.filePath] ?? null)
+                          : null
+                      }
+                      onChangeStatus={updateSuggestionStatus}
+                      onSaveEditedComment={saveEditedComment}
+                    />
                   ))}
                 </ul>
               )}

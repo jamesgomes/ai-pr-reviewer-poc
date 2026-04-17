@@ -28,6 +28,30 @@ export const pullRequestAnalysisResultSchema = z.object({
   suggestions: z.array(pullRequestAnalysisSuggestionSchema),
 });
 
+export const pullRequestSuggestionStatusSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+]);
+
+export const pullRequestReviewSuggestionSchema =
+  pullRequestAnalysisSuggestionSchema.extend({
+    status: pullRequestSuggestionStatusSchema,
+    editedComment: z.string().nullable(),
+  });
+
+export const pullRequestAnalysisCodeContextFileSchema = z.object({
+  filePath: z.string().min(1),
+  patch: z.string().nullable(),
+});
+
+export const persistedPullRequestAnalysisSchema = z.object({
+  analysisSummary: z.string().min(1),
+  reviewSuggestions: z.array(pullRequestReviewSuggestionSchema),
+  codeContextFiles: z.array(pullRequestAnalysisCodeContextFileSchema),
+  savedAt: z.string().min(1),
+});
+
 export type PullRequestAnalysisSeverity = z.infer<
   typeof pullRequestAnalysisSeveritySchema
 >;
@@ -39,6 +63,13 @@ export type PullRequestAnalysisSuggestion = z.infer<
 >;
 export type PullRequestAnalysisResult = z.infer<
   typeof pullRequestAnalysisResultSchema
+>;
+
+export type PullRequestSuggestionStatus = "pending" | "approved" | "rejected";
+export type PullRequestSuggestionFilter = "all" | PullRequestSuggestionStatus;
+
+export type PullRequestReviewSuggestion = z.infer<
+  typeof pullRequestReviewSuggestionSchema
 >;
 
 export type PullRequestAnalysisFileContext = {
@@ -60,8 +91,17 @@ export type PullRequestAnalysisContext = {
   files: PullRequestAnalysisFileContext[];
 };
 
+export type PullRequestAnalysisCodeContextFile = z.infer<
+  typeof pullRequestAnalysisCodeContextFileSchema
+>;
+
+export type PersistedPullRequestAnalysis = z.infer<
+  typeof persistedPullRequestAnalysisSchema
+>;
+
 export type PullRequestAnalysisResponse = {
   analysis: PullRequestAnalysisResult;
+  codeContextFiles: PullRequestAnalysisCodeContextFile[];
 };
 
 export type PullRequestAnalysisErrorResponse = {
