@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { PullRequestSuggestionDiffSnippet } from "@/components/pr-suggestion-diff-snippet";
 import { PullRequestSuggestionActions } from "@/components/pr-suggestion-actions";
+import { buttonVariants } from "@/components/ui/button";
 import type {
   PullRequestAnalysisSeverity,
   PullRequestReviewSuggestion,
+  PullRequestSuggestionPublishMode,
   PullRequestSuggestionStatus,
 } from "@/types/pr-analysis";
 
@@ -30,6 +32,9 @@ const suggestionCardClassName: Record<PullRequestSuggestionStatus, string> = {
   rejected: "border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/60",
 };
 
+const publishedSuggestionCardClassName =
+  "border-blue-300 bg-blue-50/40 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.08)] dark:border-blue-900 dark:bg-blue-950/20";
+
 const suggestionStatusBadgeClassName: Record<PullRequestSuggestionStatus, string> = {
   pending: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
   approved:
@@ -47,6 +52,36 @@ function getDisplayedComment(suggestion: PullRequestReviewSuggestion): string {
   return suggestion.editedComment ?? suggestion.suggestedComment;
 }
 
+function getSuggestionCardStyle(suggestion: PullRequestReviewSuggestion): string {
+  if (suggestion.status === "approved" && suggestion.published) {
+    return publishedSuggestionCardClassName;
+  }
+
+  return suggestionCardClassName[suggestion.status];
+}
+
+const publishModeLabel: Record<PullRequestSuggestionPublishMode, string> = {
+  inline: "Publicada inline",
+  consolidated: "Publicada em comentario consolidado",
+};
+
+function formatPublishedAt(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
 export function PullRequestSuggestionItem({
   suggestion,
   codePatch,
@@ -55,6 +90,9 @@ export function PullRequestSuggestionItem({
 }: PullRequestSuggestionItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftComment, setDraftComment] = useState("");
+  const formattedPublishedAt = formatPublishedAt(suggestion.publishedAt);
+  const isPublished = suggestion.published;
+  const isCommentEditing = isEditing && !isPublished;
 
   function handleStartEdit() {
     setDraftComment(getDisplayedComment(suggestion));
@@ -79,7 +117,7 @@ export function PullRequestSuggestionItem({
   }
 
   return (
-    <li className={`rounded-md border p-4 ${suggestionCardClassName[suggestion.status]}`}>
+    <li className={`rounded-md border p-4 ${getSuggestionCardStyle(suggestion)}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -88,6 +126,11 @@ export function PullRequestSuggestionItem({
             >
               {suggestionStatusLabel[suggestion.status]}
             </span>
+            {suggestion.published && suggestion.publishMode && (
+              <span className="inline-flex rounded-full border border-blue-300 bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+                {publishModeLabel[suggestion.publishMode]}
+              </span>
+            )}
             <span
               className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${severityBadgeClassName[suggestion.severity]}`}
             >
@@ -103,39 +146,66 @@ export function PullRequestSuggestionItem({
           </h4>
 
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-            {suggestion.filePath !== null ? suggestion.filePath : "Arquivo nao informado"}
+            {suggestion.filePath !== null ? suggestion.filePath : "Arquivo nao disponivel"}
             {suggestion.line !== null ? `:${suggestion.line}` : ""}
           </p>
+
+          {formattedPublishedAt && (
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              Publicada em {formattedPublishedAt}
+            </p>
+          )}
+
+          {isPublished && suggestion.publishedUrl && (
+            <div className="mt-2">
+              <a
+                href={suggestion.publishedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonVariants("secondary")}
+              >
+                Ver comentario no GitHub
+              </a>
+            </div>
+          )}
         </div>
 
-        <PullRequestSuggestionActions
-          status={suggestion.status}
-          isEditing={isEditing}
-          isSaveDisabled={draftComment.trim().length === 0}
-          onApprove={() => {
-            onChangeStatus(suggestion.id, "approved");
-            setIsEditing(false);
-            setDraftComment("");
-          }}
-          onReject={() => {
-            onChangeStatus(suggestion.id, "rejected");
-            setIsEditing(false);
-            setDraftComment("");
-          }}
-          onResetToPending={() => {
-            onChangeStatus(suggestion.id, "pending");
-            setIsEditing(false);
-            setDraftComment("");
-          }}
-          onStartEdit={handleStartEdit}
-          onSaveEdit={handleSaveEdit}
-          onCancelEdit={handleCancelEdit}
-        />
+        {!isPublished && (
+          <PullRequestSuggestionActions
+            status={suggestion.status}
+            isEditing={isCommentEditing}
+            isSaveDisabled={draftComment.trim().length === 0}
+            onApprove={() => {
+              onChangeStatus(suggestion.id, "approved");
+              setIsEditing(false);
+              setDraftComment("");
+            }}
+            onReject={() => {
+              onChangeStatus(suggestion.id, "rejected");
+              setIsEditing(false);
+              setDraftComment("");
+            }}
+            onResetToPending={() => {
+              onChangeStatus(suggestion.id, "pending");
+              setIsEditing(false);
+              setDraftComment("");
+            }}
+            onStartEdit={handleStartEdit}
+            onSaveEdit={handleSaveEdit}
+            onCancelEdit={handleCancelEdit}
+          />
+        )}
       </div>
 
       <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
         {suggestion.description}
       </p>
+
+      {suggestion.publishError && (
+        <p className="mt-3 rounded-md border border-red-300 bg-red-50 p-3 text-xs text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+          Nao foi possivel publicar esta sugestao: {suggestion.publishError}
+        </p>
+      )}
 
       {suggestion.filePath !== null && suggestion.line !== null && (
         <PullRequestSuggestionDiffSnippet
@@ -148,16 +218,16 @@ export function PullRequestSuggestionItem({
       <div className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Comentario para publicar no review
+            Comentario para publicar no PR
           </p>
-          {suggestion.editedComment !== null && !isEditing && (
+          {suggestion.editedComment !== null && !isCommentEditing && (
             <span className="inline-flex rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
-              Editado manualmente
+              Comentario editado
             </span>
           )}
         </div>
 
-        {isEditing ? (
+        {isCommentEditing ? (
           <div className="mt-2">
             <textarea
               value={draftComment}

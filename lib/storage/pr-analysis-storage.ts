@@ -11,6 +11,11 @@ type PullRequestAnalysisStorageKeyInput = {
   pullNumber: number;
 };
 
+export type PullRequestLocalReviewState = {
+  isReviewed: boolean;
+  lastPublishedAt: string | null;
+};
+
 function canUseLocalStorage(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
@@ -101,4 +106,57 @@ export function writePersistedPullRequestAnalysis(
   } catch {
     return false;
   }
+}
+
+function toLastPublishedAt(data: PersistedPullRequestAnalysis): string | null {
+  let latestPublishedAt: string | null = null;
+  let latestTimestamp = Number.NEGATIVE_INFINITY;
+
+  for (const suggestion of data.reviewSuggestions) {
+    if (!suggestion.published || !suggestion.publishedAt) {
+      continue;
+    }
+
+    const publishedTimestamp = new Date(suggestion.publishedAt).getTime();
+
+    if (Number.isNaN(publishedTimestamp)) {
+      continue;
+    }
+
+    if (publishedTimestamp > latestTimestamp) {
+      latestTimestamp = publishedTimestamp;
+      latestPublishedAt = suggestion.publishedAt;
+    }
+  }
+
+  return latestPublishedAt;
+}
+
+export function readPullRequestLocalReviewState(
+  keyInput: PullRequestAnalysisStorageKeyInput
+): PullRequestLocalReviewState {
+  const persistedAnalysis = readPersistedPullRequestAnalysis(keyInput);
+
+  if (!persistedAnalysis) {
+    return {
+      isReviewed: false,
+      lastPublishedAt: null,
+    };
+  }
+
+  const hasPublishedSuggestion = persistedAnalysis.reviewSuggestions.some(
+    (suggestion) => suggestion.published
+  );
+
+  if (!hasPublishedSuggestion) {
+    return {
+      isReviewed: false,
+      lastPublishedAt: null,
+    };
+  }
+
+  return {
+    isReviewed: true,
+    lastPublishedAt: toLastPublishedAt(persistedAnalysis),
+  };
 }

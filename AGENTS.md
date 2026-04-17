@@ -137,3 +137,8 @@ Sempre seguir esta ordem:
 - usar localStorage para preservar progresso entre recarregamentos
 - evitar banco de dados antes da validação funcional da POC
 - toda persistência deve ser isolada em helpers ou serviços dedicados
+
+## Diretriz de publicação no GitHub
+- preferir comentário inline quando houver contexto suficiente
+- usar fallback para comentário consolidado quando não houver contexto confiável
+- nunca perder sugestões aprovadas por falha de posicionamento inline

@@ -39,7 +39,7 @@ export function ThemeToggle() {
       disabled={isDisabled}
       className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
       aria-label={`Alternar para tema ${nextTheme === "dark" ? "escuro" : "claro"}`}
-      title={`Mudar para ${nextTheme === "dark" ? "dark" : "light"}`}
+      title={`Mudar para tema ${nextTheme === "dark" ? "escuro" : "claro"}`}
     >
       {isDisabled ? (
         <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="currentColor">
@@ -56,10 +56,10 @@ export function ThemeToggle() {
       )}
       <span className="sr-only">
         {isDisabled
-          ? "Theme bloqueado"
+          ? "Tema bloqueado"
           : nextTheme === "dark"
-            ? "Mudar para Dark"
-            : "Mudar para Light"}
+            ? "Mudar para tema escuro"
+            : "Mudar para tema claro"}
       </span>
     </button>
   );

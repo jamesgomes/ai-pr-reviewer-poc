@@ -26,7 +26,7 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Erro desconhecido ao carregar detalhes do PR.";
+  return "Erro desconhecido ao carregar o PR.";
 }
 
 type PullRequestDetailsResult =
@@ -59,7 +59,7 @@ export default async function PullRequestDetailsPage({
     return (
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
         <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
-          Numero de PR invalido.
+          Numero do PR invalido.
         </p>
       </main>
     );
@@ -75,7 +75,7 @@ export default async function PullRequestDetailsPage({
             href="/"
             className={buttonVariants("ghost")}
           >
-            Voltar para lista
+            Voltar para a lista
           </Link>
         </div>
         <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
@@ -91,7 +91,7 @@ export default async function PullRequestDetailsPage({
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Link href="/" className={buttonVariants("secondary")}>
-          Voltar para lista
+          Voltar para a lista
         </Link>
         <a
           href={pullRequest.url}
@@ -145,7 +145,9 @@ export default async function PullRequestDetailsPage({
           {pullRequest.body?.trim() ? (
             <PullRequestMarkdownPreview content={pullRequest.body} />
           ) : (
-            <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">Sem descricao.</p>
+            <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              Sem descricao informada.
+            </p>
           )}
         </div>
       </section>

@@ -11,7 +11,7 @@ function readRequiredEnv(name: "OPENAI_API_KEY"): string {
   const value = process.env[name];
 
   if (!value || value.trim().length === 0) {
-    throw new Error(`${name} nao foi definido no .env.local`);
+    throw new Error(`${name} nao esta definido no .env.local`);
   }
 
   return value;
@@ -86,7 +86,7 @@ export async function analyzePullRequestWithOpenAI(
   });
 
   if (!response.output_parsed) {
-    throw new Error("A OpenAI retornou uma resposta sem payload estruturado.");
+    throw new Error("A OpenAI retornou uma resposta sem estrutura valida.");
   }
 
   return response.output_parsed;

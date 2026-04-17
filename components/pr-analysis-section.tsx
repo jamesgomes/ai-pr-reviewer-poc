@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PublishStatusBanner } from "@/components/publish-status-banner";
 import { PullRequestSuggestionItem } from "@/components/pr-suggestion-item";
 import {
   readPersistedPullRequestAnalysis,
@@ -12,6 +13,10 @@ import type {
   PullRequestAnalysisCodeContextFile,
   PullRequestAnalysisErrorResponse,
   PullRequestAnalysisResponse,
+  PublishPullRequestSuggestionsErrorResponse,
+  PublishPullRequestSuggestionsResponse,
+  PublishSuggestionInput,
+  PublishSuggestionResult,
   PullRequestReviewSuggestion,
   PullRequestSuggestionFilter,
   PullRequestSuggestionStatus,
@@ -21,6 +26,14 @@ type PullRequestAnalysisSectionProps = {
   owner: string;
   repo: string;
   pullNumber: number;
+};
+
+type PublishSuccessState = {
+  inlinePublishedCount: number;
+  consolidatedPublishedCount: number;
+  failedCount: number;
+  publishedCommentUrl: string | null;
+  hasConsolidatedCommentUrl: boolean;
 };
 
 function toErrorMessage(error: unknown): string {
@@ -38,6 +51,11 @@ function toReviewSuggestions(
     ...suggestion,
     status: "pending",
     editedComment: null,
+    published: false,
+    publishedAt: null,
+    publishMode: null,
+    publishedUrl: null,
+    publishError: null,
   }));
 }
 
@@ -63,7 +81,7 @@ function formatSavedAt(value: string): string {
   const parsedDate = new Date(value);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "data invalida";
+    return "data indisponivel";
   }
 
   return parsedDate.toLocaleString("pt-BR", {
@@ -104,6 +122,22 @@ function calculateSuggestionCounters(
   );
 }
 
+function toPublishSuggestionInput(
+  suggestion: PullRequestReviewSuggestion
+): PublishSuggestionInput {
+  return {
+    id: suggestion.id,
+    title: suggestion.title,
+    filePath: suggestion.filePath,
+    line: suggestion.line,
+    comment: suggestion.editedComment ?? suggestion.suggestedComment,
+  };
+}
+
+function toSuggestionResultMap(results: PublishSuggestionResult[]): Map<string, PublishSuggestionResult> {
+  return new Map(results.map((result) => [result.id, result]));
+}
+
 export function PullRequestAnalysisSection({
   owner,
   repo,
@@ -127,10 +161,13 @@ export function PullRequestAnalysisSection({
   >(persistedAnalysisOnMount ? toPatchMap(persistedAnalysisOnMount.codeContextFiles) : {});
   const [activeFilter, setActiveFilter] = useState<PullRequestSuggestionFilter>("all");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
     persistedAnalysisOnMount?.savedAt ?? null
   );
+  const [publishSuccessState, setPublishSuccessState] = useState<PublishSuccessState | null>(null);
+  const [publishErrorMessage, setPublishErrorMessage] = useState<string | null>(null);
 
   function persistLocalAnalysis(
     nextAnalysisSummary: string,
@@ -160,6 +197,8 @@ export function PullRequestAnalysisSection({
   async function handleAnalyzePullRequest() {
     setIsAnalyzing(true);
     setErrorMessage(null);
+    setPublishSuccessState(null);
+    setPublishErrorMessage(null);
 
     try {
       const response = await fetch(
@@ -174,13 +213,13 @@ export function PullRequestAnalysisSection({
 
       if (!response.ok) {
         const message =
-          "error" in payload ? payload.error : "Falha ao executar analise do PR.";
+          "error" in payload ? payload.error : "Nao foi possivel analisar o PR.";
 
         throw new Error(message);
       }
 
       if (!("analysis" in payload) || !("codeContextFiles" in payload)) {
-        throw new Error("Resposta invalida da API de analise.");
+        throw new Error("Resposta invalida da API de analise do PR.");
       }
 
       const nextAnalysisSummary = payload.analysis.summary;
@@ -197,7 +236,7 @@ export function PullRequestAnalysisSection({
         nextCodeContextPatchesByFilePath
       );
     } catch (error: unknown) {
-      setErrorMessage(`Nao foi possivel executar a analise. ${toErrorMessage(error)}`);
+      setErrorMessage(`Nao foi possivel analisar o PR. ${toErrorMessage(error)}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -205,33 +244,119 @@ export function PullRequestAnalysisSection({
 
   function updateSuggestionStatus(id: string, status: PullRequestSuggestionStatus) {
     setReviewSuggestions((currentSuggestions) => {
-        const nextSuggestions = currentSuggestions.map((suggestion) =>
-          suggestion.id === id
-            ? {
-                ...suggestion,
-                status,
-              }
-            : suggestion
-        );
+      const nextSuggestions = currentSuggestions.map((suggestion) =>
+        suggestion.id === id
+          ? {
+              ...suggestion,
+              status,
+            }
+          : suggestion
+      );
 
-        if (analysisSummary) {
-          persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
-        }
+      if (analysisSummary) {
+        persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
+      }
 
-        return nextSuggestions;
-      });
+      return nextSuggestions;
+    });
   }
 
   function saveEditedComment(id: string, editedComment: string) {
     setReviewSuggestions((currentSuggestions) => {
-        const nextSuggestions = currentSuggestions.map((suggestion) =>
-          suggestion.id === id
-            ? {
-                ...suggestion,
-                editedComment,
-              }
-            : suggestion
-        );
+      const nextSuggestions = currentSuggestions.map((suggestion) =>
+        suggestion.id === id
+          ? {
+              ...suggestion,
+              editedComment,
+            }
+          : suggestion
+      );
+
+      if (analysisSummary) {
+        persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
+      }
+
+      return nextSuggestions;
+    });
+  }
+
+  const approvedSuggestionsToPublish = reviewSuggestions.filter(
+    (suggestion) => suggestion.status === "approved" && !suggestion.published
+  );
+
+  async function handlePublishApprovedSuggestions() {
+    if (!analysisSummary || approvedSuggestionsToPublish.length === 0) {
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishErrorMessage(null);
+    setPublishSuccessState(null);
+
+    try {
+      const publishPayload = {
+        summary: analysisSummary,
+        suggestions: approvedSuggestionsToPublish.map(toPublishSuggestionInput),
+      };
+
+      const response = await fetch(
+        `/api/pull-requests/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${pullNumber}/publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(publishPayload),
+        }
+      );
+      const payload = (await response.json()) as
+        | PublishPullRequestSuggestionsResponse
+        | PublishPullRequestSuggestionsErrorResponse;
+
+      if (!response.ok) {
+        const message =
+          "error" in payload ? payload.error : "Nao foi possivel publicar as sugestoes no GitHub.";
+
+        throw new Error(message);
+      }
+
+      if (!("ok" in payload) || !payload.ok) {
+        throw new Error("Resposta invalida da API de publicacao.");
+      }
+
+      const publishedSuggestionResultsById = toSuggestionResultMap(payload.results);
+      const attemptedSuggestionIds = new Set(
+        approvedSuggestionsToPublish.map((suggestion) => suggestion.id)
+      );
+
+      setReviewSuggestions((currentSuggestions) => {
+        const nextSuggestions = currentSuggestions.map((suggestion) => {
+          if (!attemptedSuggestionIds.has(suggestion.id)) {
+            return suggestion;
+          }
+
+          const suggestionResult = publishedSuggestionResultsById.get(suggestion.id);
+
+          if (!suggestionResult) {
+            return {
+              ...suggestion,
+              published: false,
+              publishedAt: null,
+              publishMode: null,
+              publishedUrl: null,
+              publishError: "Nao foi possivel confirmar a publicacao desta sugestao.",
+            };
+          }
+
+          return {
+            ...suggestion,
+            published: suggestionResult.published,
+            publishedAt: suggestionResult.publishedAt,
+            publishMode: suggestionResult.publishMode,
+            publishedUrl: suggestionResult.publishedUrl,
+            publishError: suggestionResult.publishError,
+          };
+        });
 
         if (analysisSummary) {
           persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
@@ -239,6 +364,24 @@ export function PullRequestAnalysisSection({
 
         return nextSuggestions;
       });
+
+      const firstPublishedCommentUrl =
+        payload.results.find((result) => result.publishedUrl !== null)?.publishedUrl ?? null;
+
+      setPublishSuccessState({
+        inlinePublishedCount: payload.summary.inlinePublished,
+        consolidatedPublishedCount: payload.summary.consolidatedPublished,
+        failedCount: payload.summary.failed,
+        publishedCommentUrl: payload.consolidatedCommentUrl ?? firstPublishedCommentUrl,
+        hasConsolidatedCommentUrl: payload.consolidatedCommentUrl !== null,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Erro desconhecido ao publicar no GitHub.";
+      setPublishErrorMessage(message);
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   const suggestionCounters = calculateSuggestionCounters(reviewSuggestions);
@@ -261,7 +404,7 @@ export function PullRequestAnalysisSection({
             Analise com IA
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Execute a revisao automatizada do diff deste PR.
+            Analise as alteracoes deste PR com IA.
           </p>
         </div>
         <Button
@@ -288,7 +431,7 @@ export function PullRequestAnalysisSection({
 
         {!analysisSummary && !isAnalyzing && !errorMessage && (
           <p className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            Nenhuma analise executada ainda.
+            Nenhuma analise foi executada.
           </p>
         )}
 
@@ -313,7 +456,34 @@ export function PullRequestAnalysisSection({
               </p>
               {lastSavedAt && (
                 <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  Ultima analise salva localmente em {formatSavedAt(lastSavedAt)}.
+                  Ultima analise salva localmente: {formatSavedAt(lastSavedAt)}.
+                </p>
+              )}
+              {approvedSuggestionsToPublish.length > 0 && (
+                <div className="mt-3">
+                  <Button
+                    variant="primary"
+                    onClick={handlePublishApprovedSuggestions}
+                    disabled={isPublishing}
+                  >
+                    {isPublishing
+                      ? "Publicando..."
+                      : `Publicar no GitHub (${approvedSuggestionsToPublish.length})`}
+                  </Button>
+                </div>
+              )}
+              {publishSuccessState && (
+                <PublishStatusBanner
+                  inlinePublishedCount={publishSuccessState.inlinePublishedCount}
+                  consolidatedPublishedCount={publishSuccessState.consolidatedPublishedCount}
+                  failedCount={publishSuccessState.failedCount}
+                  publishedCommentUrl={publishSuccessState.publishedCommentUrl}
+                  hasConsolidatedCommentUrl={publishSuccessState.hasConsolidatedCommentUrl}
+                />
+              )}
+              {publishErrorMessage && (
+                <p className="mt-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+                  {publishErrorMessage}
                 </p>
               )}
               <div className="mt-3 flex flex-wrap gap-2">
@@ -345,7 +515,7 @@ export function PullRequestAnalysisSection({
                 </p>
               ) : filteredSuggestions.length === 0 ? (
                 <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                  Nenhuma sugestao encontrada para o filtro selecionado.
+                  Nenhuma sugestao neste filtro.
                 </p>
               ) : (
                 <ul className="mt-3 space-y-3">

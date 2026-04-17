@@ -73,7 +73,7 @@ export function PullRequestSuggestionDiffSnippet({
         </div>
       ) : (
         <p className="px-3 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-          Nao foi possivel extrair o trecho correspondente no patch deste arquivo.
+          Nao foi possivel extrair um trecho do patch para esta linha.
         </p>
       )}
     </div>

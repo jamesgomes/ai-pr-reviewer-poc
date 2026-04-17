@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PullRequestListItemRow } from "@/components/pull-request-list-item";
+import {
+  PullRequestTabs,
+  type PullRequestTab,
+} from "@/components/pull-request-tabs";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import {
+  readPullRequestLocalReviewState,
+  type PullRequestLocalReviewState,
+} from "@/lib/storage/pr-analysis-storage";
 import type {
   ApiErrorResponse,
   PullRequestListItem,
@@ -23,11 +31,17 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Nao foi possivel carregar os PRs.";
+  return "Nao foi possivel carregar os Pull Requests.";
 }
+
+type PullRequestWithLocalReviewState = {
+  pullRequest: PullRequestListItem;
+  reviewState: PullRequestLocalReviewState;
+};
 
 export default function HomePage() {
   const [state, setState] = useState<DashboardState>({ status: "loading" });
+  const [activeTab, setActiveTab] = useState<PullRequestTab>("pending");
 
   useEffect(() => {
     let cancelled = false;
@@ -41,7 +55,7 @@ export default function HomePage() {
           const message =
             "error" in payload
               ? payload.error
-              : "Falha ao buscar os PRs pendentes de revisao.";
+              : "Nao foi possivel buscar os Pull Requests pendentes.";
 
           if (!cancelled) {
             setState({ status: "error", message });
@@ -51,7 +65,7 @@ export default function HomePage() {
         }
 
         if (!("pullRequests" in payload)) {
-          throw new Error("Resposta invalida da API de pull requests.");
+          throw new Error("Resposta invalida da API de Pull Requests.");
         }
 
         if (!cancelled) {
@@ -68,7 +82,7 @@ export default function HomePage() {
         if (!cancelled) {
           setState({
             status: "error",
-            message: `Erro ao carregar PRs. ${toErrorMessage(error)}`,
+            message: `Nao foi possivel carregar os Pull Requests. ${toErrorMessage(error)}`,
           });
         }
       }
@@ -81,22 +95,46 @@ export default function HomePage() {
     };
   }, []);
 
+  const pullRequestsWithLocalReviewState = useMemo<PullRequestWithLocalReviewState[]>(() => {
+    if (state.status !== "loaded") {
+      return [];
+    }
+
+    return state.pullRequests.map((pullRequest) => ({
+      pullRequest,
+      reviewState: readPullRequestLocalReviewState({
+        owner: pullRequest.repositoryOwner,
+        repo: pullRequest.repositoryName,
+        pullNumber: pullRequest.number,
+      }),
+    }));
+  }, [state]);
+
+  const pendingPullRequests = pullRequestsWithLocalReviewState.filter(
+    (entry) => !entry.reviewState.isReviewed
+  );
+  const reviewedPullRequests = pullRequestsWithLocalReviewState.filter(
+    (entry) => entry.reviewState.isReviewed
+  );
+  const visiblePullRequests =
+    activeTab === "pending" ? pendingPullRequests : reviewedPullRequests;
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
       <header className="mb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-            Pull requests para revisao
+            Pull Requests para revisao
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            PRs abertos onde voce foi solicitado como reviewer.
+            PRs abertos em que voce foi solicitado como reviewer.
           </p>
         </div>
       </header>
 
       {state.status === "loading" && (
         <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <LoadingSpinner label="Atualizando fila de PRs..." />
+          <LoadingSpinner label="Atualizando lista de PRs..." />
         </div>
       )}
 
@@ -108,16 +146,37 @@ export default function HomePage() {
 
       {state.status === "empty" && (
         <p className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-          Nenhum PR pendente de revisao no momento.
+          Nenhum PR pendente no momento.
         </p>
       )}
 
       {state.status === "loaded" && (
-        <ul className="overflow-hidden rounded-md border border-zinc-200 bg-white divide-y divide-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:divide-zinc-800">
-          {state.pullRequests.map((pullRequest) => (
-            <PullRequestListItemRow key={pullRequest.id} pullRequest={pullRequest} />
-          ))}
-        </ul>
+        <div>
+          <PullRequestTabs
+            activeTab={activeTab}
+            pendingCount={pendingPullRequests.length}
+            reviewedCount={reviewedPullRequests.length}
+            onChangeTab={setActiveTab}
+          />
+
+          {visiblePullRequests.length === 0 ? (
+            <p className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+              {activeTab === "pending"
+                ? "Nenhum PR pendente nesta aba."
+                : "Nenhum PR revisado localmente ainda."}
+            </p>
+          ) : (
+            <ul className="overflow-hidden rounded-md border border-zinc-200 bg-white divide-y divide-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:divide-zinc-800">
+              {visiblePullRequests.map(({ pullRequest, reviewState }) => (
+                <PullRequestListItemRow
+                  key={pullRequest.id}
+                  pullRequest={pullRequest}
+                  reviewState={reviewState}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
       )}
     </main>
   );

@@ -26,7 +26,7 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Erro desconhecido na analise do PR.";
+  return "Erro desconhecido ao analisar o PR.";
 }
 
 export async function POST(
@@ -56,7 +56,7 @@ export async function POST(
     const payload: PullRequestAnalysisErrorResponse = {
       error:
         status === 400
-          ? "Parametros invalidos para analise do PR."
+          ? "Parametros invalidos para analisar o PR."
           : `Nao foi possivel analisar o PR com IA. ${toErrorMessage(error)}`,
     };
 

@@ -13,7 +13,7 @@ function parseRepositoryRef(repositoryApiUrl: string): RepositoryRef {
     .filter(Boolean);
 
   if (pathParts.length < 3 || pathParts[0] !== "repos") {
-    throw new Error("Formato de URL de repositorio invalido vindo do GitHub");
+    throw new Error("Formato invalido de URL de repositorio retornada pelo GitHub.");
   }
 
   return {

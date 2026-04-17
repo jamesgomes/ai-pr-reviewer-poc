@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { PullRequestAuthor } from "@/components/pr-author";
 import { PullRequestStatus } from "@/components/pull-request-status";
+import type { PullRequestLocalReviewState } from "@/lib/storage/pr-analysis-storage";
 import type { PullRequestListItem } from "@/types/pull-request";
 
 type PullRequestListItemRowProps = {
   pullRequest: PullRequestListItem;
+  reviewState?: PullRequestLocalReviewState;
 };
 
 function formatUpdatedAt(value: string): string {
@@ -17,9 +19,25 @@ function toPullRequestDetailsPath(pullRequest: PullRequestListItem): string {
   return `/pull-requests/${encodeURIComponent(pullRequest.repositoryOwner)}/${encodeURIComponent(pullRequest.repositoryName)}/${pullRequest.number}`;
 }
 
+function formatPublishedAt(value: string): string {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
 export function PullRequestListItemRow({
   pullRequest,
+  reviewState,
 }: PullRequestListItemRowProps) {
+  const isReviewed = reviewState?.isReviewed ?? false;
+
   return (
     <li>
       <Link
@@ -32,6 +50,11 @@ export function PullRequestListItemRow({
             <h2 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {pullRequest.title}
             </h2>
+            {isReviewed && (
+              <span className="inline-flex shrink-0 rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
+                Revisado
+              </span>
+            )}
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-600 dark:text-zinc-400">
@@ -44,6 +67,9 @@ export function PullRequestListItemRow({
               avatarUrl={pullRequest.authorAvatarUrl}
             />
             <span>Atualizado em {formatUpdatedAt(pullRequest.updatedAt)}</span>
+            {isReviewed && reviewState?.lastPublishedAt && (
+              <span>Ultima publicacao: {formatPublishedAt(reviewState.lastPublishedAt)}</span>
+            )}
           </div>
         </div>
 

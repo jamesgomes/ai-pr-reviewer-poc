@@ -6,7 +6,7 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Falha ao carregar PRs do GitHub.";
+  return "Nao foi possivel carregar Pull Requests no GitHub.";
 }
 
 export async function GET() {
@@ -17,7 +17,7 @@ export async function GET() {
     return Response.json(payload);
   } catch (error: unknown) {
     const payload: ApiErrorResponse = {
-      error: `Nao foi possivel carregar os PRs pendentes de revisao. ${getErrorMessage(error)}`,
+      error: `Nao foi possivel carregar os Pull Requests pendentes. ${getErrorMessage(error)}`,
     };
 
     return Response.json(payload, { status: 500 });
