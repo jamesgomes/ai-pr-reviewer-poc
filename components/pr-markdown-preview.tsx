@@ -1,4 +1,6 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -6,6 +8,28 @@ import type { Components } from "react-markdown";
 type PullRequestMarkdownPreviewProps = {
   content: string;
 };
+
+function toDisplayImageSource(source: string | undefined): string | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(source);
+
+    if (
+      parsedUrl.protocol === "https:" &&
+      parsedUrl.hostname === "github.com" &&
+      parsedUrl.pathname.startsWith("/user-attachments/assets/")
+    ) {
+      return `/api/github-image?url=${encodeURIComponent(source)}`;
+    }
+
+    return source;
+  } catch {
+    return source;
+  }
+}
 
 const markdownComponents: Components = {
   h1: ({ children }) => (
@@ -65,6 +89,15 @@ const markdownComponents: Components = {
     </blockquote>
   ),
   hr: () => <hr className="my-4 border-zinc-200 dark:border-zinc-800" />,
+  img: ({ src, alt }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={toDisplayImageSource(typeof src === "string" ? src : undefined)}
+      alt={typeof alt === "string" ? alt : ""}
+      loading="lazy"
+      className="mt-3 h-auto max-w-full rounded-md border border-zinc-200 dark:border-zinc-800"
+    />
+  ),
 };
 
 export function PullRequestMarkdownPreview({
@@ -72,8 +105,8 @@ export function PullRequestMarkdownPreview({
 }: PullRequestMarkdownPreviewProps) {
   return (
     <ReactMarkdown
-      skipHtml
       remarkPlugins={[remarkGfm, remarkBreaks]}
+      rehypePlugins={[rehypeRaw, rehypeSanitize]}
       components={markdownComponents}
     >
       {content}
