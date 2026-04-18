@@ -39,32 +39,76 @@ export async function listRequestedPullRequests(
 ): Promise<PullRequestListItem[]> {
   const octokit = createGitHubClient(accessToken);
 
-  const response = await octokit.request("GET /search/issues", {
-    q: `is:open is:pr archived:false review-requested:${githubLogin}`,
-    sort: "updated",
-    order: "desc",
-    per_page: 50,
-  });
+  const [reviewRequestedResponse, authoredResponse] = await Promise.all([
+    octokit.request("GET /search/issues", {
+      q: `is:open is:pr archived:false review-requested:${githubLogin}`,
+      sort: "updated",
+      order: "desc",
+      per_page: 50,
+    }),
+    octokit.request("GET /search/issues", {
+      q: `is:open is:pr archived:false author:${githubLogin}`,
+      sort: "updated",
+      order: "desc",
+      per_page: 50,
+    }),
+  ]);
 
-  return response.data.items
+  const mergedItemsById = new Map(
+    [...reviewRequestedResponse.data.items, ...authoredResponse.data.items].map((item) => [
+      item.id,
+      item,
+    ])
+  );
+
+  const pullRequestItems = Array.from(mergedItemsById.values())
     .filter((item) => item.pull_request !== null)
-    .map((item) => {
-      const repositoryRef = parseRepositoryRef(item.repository_url);
+    .sort(
+      (firstItem, secondItem) =>
+        new Date(secondItem.updated_at).getTime() - new Date(firstItem.updated_at).getTime()
+    );
 
-      return {
-        id: item.id,
-        number: item.number,
-        title: item.title,
-        state: toPullRequestState(item.state),
-        commentCount: item.comments,
-        repositoryName: repositoryRef.name,
-        repositoryOwner: repositoryRef.owner,
-        authorLogin: item.user?.login ?? "unknown",
-        authorAvatarUrl: item.user?.avatar_url ?? null,
-        updatedAt: item.updated_at,
-        url: item.html_url,
-      };
-    });
+  const commentCountByIssueId = new Map<number, number>();
+
+  await Promise.all(
+    pullRequestItems.map(async (item) => {
+      try {
+        const repositoryRef = parseRepositoryRef(item.repository_url);
+        const pullRequestResponse = await octokit.request(
+          "GET /repos/{owner}/{repo}/pulls/{pull_number}",
+          {
+            owner: repositoryRef.owner,
+            repo: repositoryRef.name,
+            pull_number: item.number,
+          }
+        );
+
+        const totalComments =
+          pullRequestResponse.data.comments + pullRequestResponse.data.review_comments;
+        commentCountByIssueId.set(item.id, totalComments);
+      } catch {
+        commentCountByIssueId.set(item.id, item.comments);
+      }
+    })
+  );
+
+  return pullRequestItems.map((item) => {
+    const repositoryRef = parseRepositoryRef(item.repository_url);
+
+    return {
+      id: item.id,
+      number: item.number,
+      title: item.title,
+      state: toPullRequestState(item.state),
+      commentCount: commentCountByIssueId.get(item.id) ?? item.comments,
+      repositoryName: repositoryRef.name,
+      repositoryOwner: repositoryRef.owner,
+      authorLogin: item.user?.login ?? "unknown",
+      authorAvatarUrl: item.user?.avatar_url ?? null,
+      updatedAt: item.updated_at,
+      url: item.html_url,
+    };
+  });
 }
 
 export async function getPullRequestDetails(
@@ -85,7 +129,7 @@ export async function getPullRequestDetails(
     number: response.data.number,
     title: response.data.title,
     state: toPullRequestState(response.data.state),
-    commentCount: response.data.comments,
+    commentCount: response.data.comments + response.data.review_comments,
     repositoryName: response.data.base.repo.name,
     repositoryOwner: response.data.base.repo.owner.login,
     authorLogin: response.data.user?.login ?? "unknown",

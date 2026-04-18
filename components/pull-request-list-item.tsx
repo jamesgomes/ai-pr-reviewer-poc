@@ -7,6 +7,8 @@ import type { PullRequestListItem } from "@/types/pull-request";
 type PullRequestListItemRowProps = {
   pullRequest: PullRequestListItem;
   reviewState?: PullRequestLocalReviewState;
+  isMine?: boolean;
+  mineBadgeLabel?: string;
 };
 
 function formatUpdatedAt(value: string): string {
@@ -35,6 +37,8 @@ function formatPublishedAt(value: string): string {
 export function PullRequestListItemRow({
   pullRequest,
   reviewState,
+  isMine = false,
+  mineBadgeLabel = "Meu PR",
 }: PullRequestListItemRowProps) {
   const isReviewed = reviewState?.isReviewed ?? false;
 
@@ -50,7 +54,12 @@ export function PullRequestListItemRow({
             <h2 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {pullRequest.title}
             </h2>
-            {isReviewed && (
+            {isMine && (
+              <span className="inline-flex shrink-0 rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                {mineBadgeLabel}
+              </span>
+            )}
+            {!isMine && isReviewed && (
               <span className="inline-flex shrink-0 rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
                 Revisado
               </span>

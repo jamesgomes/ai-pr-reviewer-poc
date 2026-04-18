@@ -1,8 +1,9 @@
-export type PullRequestTab = "pending" | "reviewed";
+export type PullRequestTab = "pending" | "mine" | "reviewed";
 
 type PullRequestTabsProps = {
   activeTab: PullRequestTab;
   pendingCount: number;
+  mineCount: number;
   reviewedCount: number;
   onChangeTab: (tab: PullRequestTab) => void;
 };
@@ -11,6 +12,7 @@ const tabOptions: Array<{
   value: PullRequestTab;
   label: string;
 }> = [
+  { value: "mine", label: "Meus PRs" },
   { value: "pending", label: "Pendentes" },
   { value: "reviewed", label: "Revisados" },
 ];
@@ -18,11 +20,13 @@ const tabOptions: Array<{
 export function PullRequestTabs({
   activeTab,
   pendingCount,
+  mineCount,
   reviewedCount,
   onChangeTab,
 }: PullRequestTabsProps) {
   const countByTab: Record<PullRequestTab, number> = {
     pending: pendingCount,
+    mine: mineCount,
     reviewed: reviewedCount,
   };
 
