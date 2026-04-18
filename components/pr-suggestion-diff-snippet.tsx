@@ -44,7 +44,7 @@ export function PullRequestSuggestionDiffSnippet({
           {filePath}
         </p>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Linha de referencia: {snippet?.referenceLine ?? line}
+          Linha de referência: {snippet?.referenceLine ?? line}
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export function PullRequestSuggestionDiffSnippet({
         </div>
       ) : (
         <p className="px-3 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-          Nao foi possivel extrair um trecho do patch para esta linha.
+          Não foi possível extrair um trecho do patch para esta linha.
         </p>
       )}
     </div>

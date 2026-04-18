@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getAuthenticatedAppUser } from "@/lib/auth";
 import { analyzePullRequestWithOpenAI } from "@/lib/openai";
 import { buildPullRequestAnalysisPrompt } from "@/lib/prompts/pr-analysis";
 import { getPullRequestAnalysisContext } from "@/lib/pull-requests";
@@ -34,11 +35,22 @@ export async function POST(
   { params }: AnalyzePullRequestRouteContext
 ) {
   try {
+    const authenticatedUser = await getAuthenticatedAppUser();
+
+    if (!authenticatedUser) {
+      const unauthorizedPayload: PullRequestAnalysisErrorResponse = {
+        error: "Sessão inválida. Faça login novamente.",
+      };
+
+      return Response.json(unauthorizedPayload, { status: 401 });
+    }
+
     const parsedParams = analyzePullRequestParamsSchema.parse(await params);
     const context = await getPullRequestAnalysisContext(
       parsedParams.owner,
       parsedParams.repo,
-      parsedParams.number
+      parsedParams.number,
+      authenticatedUser.accessToken
     );
     const prompt = buildPullRequestAnalysisPrompt(context);
     const analysis = await analyzePullRequestWithOpenAI(prompt);
@@ -56,8 +68,8 @@ export async function POST(
     const payload: PullRequestAnalysisErrorResponse = {
       error:
         status === 400
-          ? "Parametros invalidos para analisar o PR."
-          : `Nao foi possivel analisar o PR com IA. ${toErrorMessage(error)}`,
+          ? "Parâmetros inválidos para analisar o PR."
+          : `Não foi possível analisar o PR com IA. ${toErrorMessage(error)}`,
     };
 
     return Response.json(payload, { status });

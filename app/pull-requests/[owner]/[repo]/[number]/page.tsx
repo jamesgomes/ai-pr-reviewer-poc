@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PullRequestAuthor } from "@/components/pr-author";
 import { PullRequestAnalysisSectionClient } from "@/components/pr-analysis-section-client";
 import { PullRequestMarkdownPreview } from "@/components/pr-markdown-preview";
 import { buttonVariants } from "@/components/ui/button";
+import { getAuthenticatedAppUser } from "@/lib/auth";
 import { getPullRequestDetails } from "@/lib/pull-requests";
 import type { PullRequestDetail } from "@/types/pull-request";
 
@@ -21,6 +23,10 @@ function formatUpdatedAt(value: string): string {
   });
 }
 
+function formatPullRequestState(state: PullRequestDetail["state"]): string {
+  return state === "open" ? "Aberto" : "Fechado";
+}
+
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -36,15 +42,16 @@ type PullRequestDetailsResult =
 async function loadPullRequestDetails(
   owner: string,
   repo: string,
-  pullNumber: number
+  pullNumber: number,
+  accessToken: string
 ): Promise<PullRequestDetailsResult> {
   try {
-    const pullRequest = await getPullRequestDetails(owner, repo, pullNumber);
+    const pullRequest = await getPullRequestDetails(owner, repo, pullNumber, accessToken);
     return { ok: true, pullRequest };
   } catch (error: unknown) {
     return {
       ok: false,
-      errorMessage: `Nao foi possivel carregar os detalhes do PR. ${toErrorMessage(error)}`,
+      errorMessage: `Não foi possível carregar os detalhes do PR. ${toErrorMessage(error)}`,
     };
   }
 }
@@ -52,6 +59,12 @@ async function loadPullRequestDetails(
 export default async function PullRequestDetailsPage({
   params,
 }: PullRequestDetailsPageProps) {
+  const authenticatedUser = await getAuthenticatedAppUser();
+
+  if (!authenticatedUser) {
+    redirect("/login");
+  }
+
   const { owner, repo, number } = await params;
   const pullNumber = Number.parseInt(number, 10);
 
@@ -59,13 +72,18 @@ export default async function PullRequestDetailsPage({
     return (
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
         <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
-          Numero do PR invalido.
+          Número do PR inválido.
         </p>
       </main>
     );
   }
 
-  const result = await loadPullRequestDetails(owner, repo, pullNumber);
+  const result = await loadPullRequestDetails(
+    owner,
+    repo,
+    pullNumber,
+    authenticatedUser.accessToken
+  );
 
   if (!result.ok) {
     return (
@@ -121,7 +139,7 @@ export default async function PullRequestDetailsPage({
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-zinc-600 dark:text-zinc-400">
               <p>
-                Repositorio:{" "}
+                Repositório:{" "}
                 <span className="text-zinc-800 dark:text-zinc-200">
                   {pullRequest.repositoryOwner}/{pullRequest.repositoryName}
                 </span>
@@ -131,7 +149,9 @@ export default async function PullRequestDetailsPage({
               </p>
               <p>
                 Status:{" "}
-                <span className="text-zinc-800 dark:text-zinc-200">{pullRequest.state}</span>
+                <span className="text-zinc-800 dark:text-zinc-200">
+                  {formatPullRequestState(pullRequest.state)}
+                </span>
               </p>
               <p>Atualizado em: {formatUpdatedAt(pullRequest.updatedAt)}</p>
             </div>
@@ -140,13 +160,13 @@ export default async function PullRequestDetailsPage({
 
         <div className="px-4 py-4 sm:px-5">
           <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Descricao
+            Descrição
           </h2>
           {pullRequest.body?.trim() ? (
             <PullRequestMarkdownPreview content={pullRequest.body} />
           ) : (
             <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-              Sem descricao informada.
+              Sem descrição informada.
             </p>
           )}
         </div>
@@ -154,6 +174,7 @@ export default async function PullRequestDetailsPage({
 
       <PullRequestAnalysisSectionClient
         key={`${pullRequest.repositoryOwner}/${pullRequest.repositoryName}/${pullRequest.number}`}
+        githubUserKey={authenticatedUser.storageKey}
         owner={pullRequest.repositoryOwner}
         repo={pullRequest.repositoryName}
         pullNumber={pullRequest.number}

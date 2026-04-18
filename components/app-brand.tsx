@@ -9,7 +9,7 @@ export function AppBrand() {
       <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-[10px] font-bold tracking-wide text-white dark:bg-zinc-100 dark:text-zinc-900">
         PR
       </span>
-      <span className="hidden text-sm font-semibold sm:inline">AI PR Reviewer</span>
+      <span className="hidden text-sm font-semibold sm:inline">AI Reviewer</span>
     </Link>
   );
 }

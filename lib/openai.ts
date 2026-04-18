@@ -11,7 +11,7 @@ function readRequiredEnv(name: "OPENAI_API_KEY"): string {
   const value = process.env[name];
 
   if (!value || value.trim().length === 0) {
-    throw new Error(`${name} nao esta definido no .env.local`);
+    throw new Error(`${name} não está definido no .env.local`);
   }
 
   return value;
@@ -46,7 +46,7 @@ async function getPullRequestAnalysisInstructions(): Promise<string> {
   const instructions = fileContent.trim();
 
   if (!instructions) {
-    throw new Error("O arquivo de instrucoes da analise de PR esta vazio.");
+    throw new Error("O arquivo de instruções da análise de PR está vazio.");
   }
 
   cachedAnalysisInstructions = instructions;
@@ -86,7 +86,7 @@ export async function analyzePullRequestWithOpenAI(
   });
 
   if (!response.output_parsed) {
-    throw new Error("A OpenAI retornou uma resposta sem estrutura valida.");
+    throw new Error("A OpenAI retornou uma resposta sem estrutura válida.");
   }
 
   return response.output_parsed;

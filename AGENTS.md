@@ -142,3 +142,10 @@ Sempre seguir esta ordem:
 - preferir comentário inline quando houver contexto suficiente
 - usar fallback para comentário consolidado quando não houver contexto confiável
 - nunca perder sugestões aprovadas por falha de posicionamento inline
+
+## Diretriz de autenticação do MVP
+- o MVP deve usar autenticação com GitHub
+- a aplicação deve operar no contexto do usuário autenticado
+- persistência local deve ser isolada por usuário
+- enquanto não houver banco de dados, o navegador continua sendo a fonte de persistência da análise e das decisões do usuário
+- o produto não deve misturar identidade visualizada com token de outro usuário

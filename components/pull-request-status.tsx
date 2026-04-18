@@ -20,7 +20,7 @@ export function PullRequestStatus({ state }: PullRequestStatusProps) {
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${stateStyles[state]}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${dotStyles[state]}`} aria-hidden />
-      {state === "open" ? "Open" : "Closed"}
+      {state === "open" ? "Aberto" : "Fechado"}
     </span>
   );
 }

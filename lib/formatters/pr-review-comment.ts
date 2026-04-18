@@ -14,7 +14,7 @@ function formatSuggestionLocation(suggestion: PublishSuggestionInput): string {
     return suggestion.filePath;
   }
 
-  return "Nao informado";
+  return "Não informado";
 }
 
 export function buildPullRequestReviewCommentMarkdown({
@@ -38,7 +38,7 @@ export function buildPullRequestReviewCommentMarkdown({
     "Resumo:",
     summary,
     "",
-    "Sugestoes aprovadas para revisao:",
+    "Sugestões aprovadas para revisão:",
     "",
     ...sections,
     "",

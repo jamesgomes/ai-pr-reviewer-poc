@@ -89,7 +89,7 @@ export function resolveInlineReviewPayload(
   if (suggestion.filePath === null || suggestion.line === null) {
     return {
       ok: false,
-      reason: "Sugestao sem filePath/line para publicacao inline.",
+      reason: "Sugestão sem filePath/line para publicação inline.",
     };
   }
 
@@ -98,14 +98,14 @@ export function resolveInlineReviewPayload(
   if (!file) {
     return {
       ok: false,
-      reason: "Arquivo da sugestao nao encontrado no diff do PR.",
+      reason: "Arquivo da sugestão não encontrado no diff do PR.",
     };
   }
 
   if (!file.patch) {
     return {
       ok: false,
-      reason: "Arquivo sem patch disponivel para publicacao inline.",
+      reason: "Arquivo sem patch disponível para publicação inline.",
     };
   }
 
@@ -115,7 +115,7 @@ export function resolveInlineReviewPayload(
   if (resolvedLine === null) {
     return {
       ok: false,
-      reason: "Nao foi possivel localizar uma linha valida no diff para comentario inline.",
+      reason: "Não foi possível localizar uma linha válida no diff para comentário inline.",
     };
   }
 

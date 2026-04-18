@@ -1,7 +1,7 @@
 export type AuthenticatedGitHubUser = {
-  id: number;
+  id: string;
   login: string;
   name: string | null;
-  avatarUrl: string;
-  profileUrl: string;
+  avatarUrl: string | null;
+  profileUrl: string | null;
 };

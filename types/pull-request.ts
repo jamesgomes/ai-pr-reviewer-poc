@@ -16,8 +16,18 @@ export type PullRequestDetail = PullRequestListItem & {
   body: string | null;
 };
 
+export type AuthenticatedPullRequestUser = {
+  githubUserId: string | null;
+  githubLogin: string;
+  name: string | null;
+  avatarUrl: string | null;
+  profileUrl: string | null;
+  storageKey: string;
+};
+
 export type PullRequestListResponse = {
   pullRequests: PullRequestListItem[];
+  authenticatedUser: AuthenticatedPullRequestUser;
 };
 
 export type PullRequestDetailResponse = {

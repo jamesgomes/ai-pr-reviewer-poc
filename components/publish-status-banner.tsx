@@ -10,10 +10,10 @@ type PublishStatusBannerProps = {
 
 function toBannerTitle(failedCount: number): string {
   if (failedCount > 0) {
-    return "Publicacao concluida com falhas";
+    return "Publicação concluída com falhas";
   }
 
-  return "Publicacao concluida";
+  return "Publicação concluída";
 }
 
 export function PublishStatusBanner({
@@ -64,8 +64,8 @@ export function PublishStatusBanner({
             className={buttonVariants("secondary")}
           >
             {hasConsolidatedCommentUrl
-              ? "Ver comentario consolidado no GitHub"
-              : "Ver comentario no GitHub"}
+              ? "Ver comentário consolidado no GitHub"
+              : "Ver comentário no GitHub"}
           </a>
         )}
       </div>

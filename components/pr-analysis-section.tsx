@@ -23,6 +23,7 @@ import type {
 } from "@/types/pr-analysis";
 
 type PullRequestAnalysisSectionProps = {
+  githubUserKey: string;
   owner: string;
   repo: string;
   pullNumber: number;
@@ -81,7 +82,7 @@ function formatSavedAt(value: string): string {
   const parsedDate = new Date(value);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "data indisponivel";
+    return "Data indisponível";
   }
 
   return parsedDate.toLocaleString("pt-BR", {
@@ -139,12 +140,14 @@ function toSuggestionResultMap(results: PublishSuggestionResult[]): Map<string, 
 }
 
 export function PullRequestAnalysisSection({
+  githubUserKey,
   owner,
   repo,
   pullNumber,
 }: PullRequestAnalysisSectionProps) {
   const [persistedAnalysisOnMount] = useState(() =>
     readPersistedPullRequestAnalysis({
+      githubUserKey,
       owner,
       repo,
       pullNumber,
@@ -177,6 +180,7 @@ export function PullRequestAnalysisSection({
     const savedAt = new Date().toISOString();
     const didPersist = writePersistedPullRequestAnalysis(
       {
+        githubUserKey,
         owner,
         repo,
         pullNumber,
@@ -213,13 +217,13 @@ export function PullRequestAnalysisSection({
 
       if (!response.ok) {
         const message =
-          "error" in payload ? payload.error : "Nao foi possivel analisar o PR.";
+          "error" in payload ? payload.error : "Não foi possível analisar o PR.";
 
         throw new Error(message);
       }
 
       if (!("analysis" in payload) || !("codeContextFiles" in payload)) {
-        throw new Error("Resposta invalida da API de analise do PR.");
+        throw new Error("Resposta inválida da API de análise do PR.");
       }
 
       const nextAnalysisSummary = payload.analysis.summary;
@@ -236,7 +240,7 @@ export function PullRequestAnalysisSection({
         nextCodeContextPatchesByFilePath
       );
     } catch (error: unknown) {
-      setErrorMessage(`Nao foi possivel analisar o PR. ${toErrorMessage(error)}`);
+      setErrorMessage(`Não foi possível analisar o PR. ${toErrorMessage(error)}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -315,13 +319,13 @@ export function PullRequestAnalysisSection({
 
       if (!response.ok) {
         const message =
-          "error" in payload ? payload.error : "Nao foi possivel publicar as sugestoes no GitHub.";
+          "error" in payload ? payload.error : "Não foi possível publicar as sugestões no GitHub.";
 
         throw new Error(message);
       }
 
       if (!("ok" in payload) || !payload.ok) {
-        throw new Error("Resposta invalida da API de publicacao.");
+        throw new Error("Resposta inválida da API de publicação.");
       }
 
       const publishedSuggestionResultsById = toSuggestionResultMap(payload.results);
@@ -344,7 +348,7 @@ export function PullRequestAnalysisSection({
               publishedAt: null,
               publishMode: null,
               publishedUrl: null,
-              publishError: "Nao foi possivel confirmar a publicacao desta sugestao.",
+              publishError: "Não foi possível confirmar a publicação desta sugestão.",
             };
           }
 
@@ -401,10 +405,10 @@ export function PullRequestAnalysisSection({
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 sm:px-5">
         <div>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Analise com IA
+            Análise com IA
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Analise as alteracoes deste PR com IA.
+            Analise as alterações deste PR com IA.
           </p>
         </div>
         <Button
@@ -419,7 +423,7 @@ export function PullRequestAnalysisSection({
       <div className="px-4 py-4 sm:px-5">
         {isAnalyzing && (
           <div className="mb-4 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
-            <LoadingSpinner label="Analisando alteracoes do PR..." />
+            <LoadingSpinner label="Analisando alterações do PR..." />
           </div>
         )}
 
@@ -431,7 +435,7 @@ export function PullRequestAnalysisSection({
 
         {!analysisSummary && !isAnalyzing && !errorMessage && (
           <p className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            Nenhuma analise foi executada.
+            Nenhuma análise foi executada.
           </p>
         )}
 
@@ -448,7 +452,7 @@ export function PullRequestAnalysisSection({
 
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Sugestoes ({reviewSuggestions.length})
+                Sugestões ({reviewSuggestions.length})
               </h3>
               <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                 Pendentes: {suggestionCounters.pending} · Aprovadas: {suggestionCounters.approved} ·
@@ -456,7 +460,7 @@ export function PullRequestAnalysisSection({
               </p>
               {lastSavedAt && (
                 <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  Ultima analise salva localmente: {formatSavedAt(lastSavedAt)}.
+                  Última análise salva localmente: {formatSavedAt(lastSavedAt)}.
                 </p>
               )}
               {approvedSuggestionsToPublish.length > 0 && (
@@ -511,11 +515,11 @@ export function PullRequestAnalysisSection({
 
               {reviewSuggestions.length === 0 ? (
                 <p className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                  Nenhuma sugestao relevante foi identificada para este PR.
+                  Nenhuma sugestão relevante foi identificada para este PR.
                 </p>
               ) : filteredSuggestions.length === 0 ? (
                 <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                  Nenhuma sugestao neste filtro.
+                  Nenhuma sugestão neste filtro.
                 </p>
               ) : (
                 <ul className="mt-3 space-y-3">

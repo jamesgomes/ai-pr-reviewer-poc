@@ -1,6 +1,7 @@
-import { getGitHubClient, getGitHubUsername } from "@/lib/github";
 import type { PullRequestDetail, PullRequestListItem } from "@/types/pull-request";
 import type { PullRequestAnalysisContext } from "@/types/pr-analysis";
+import { getAuthenticatedGitHubUser } from "@/lib/github";
+import { Octokit } from "octokit";
 
 type RepositoryRef = {
   owner: string;
@@ -13,7 +14,7 @@ function parseRepositoryRef(repositoryApiUrl: string): RepositoryRef {
     .filter(Boolean);
 
   if (pathParts.length < 3 || pathParts[0] !== "repos") {
-    throw new Error("Formato invalido de URL de repositorio retornada pelo GitHub.");
+    throw new Error("Formato inválido de URL de repositório retornada pelo GitHub.");
   }
 
   return {
@@ -26,12 +27,20 @@ function toPullRequestState(state: string): "open" | "closed" {
   return state === "open" ? "open" : "closed";
 }
 
-export async function listRequestedPullRequests(): Promise<PullRequestListItem[]> {
-  const octokit = getGitHubClient();
-  const githubUsername = getGitHubUsername();
+function createGitHubClient(accessToken: string): Octokit {
+  return new Octokit({
+    auth: accessToken,
+  });
+}
+
+export async function listRequestedPullRequests(
+  accessToken: string,
+  githubLogin: string
+): Promise<PullRequestListItem[]> {
+  const octokit = createGitHubClient(accessToken);
 
   const response = await octokit.request("GET /search/issues", {
-    q: `is:open is:pr archived:false review-requested:${githubUsername}`,
+    q: `is:open is:pr archived:false review-requested:${githubLogin}`,
     sort: "updated",
     order: "desc",
     per_page: 50,
@@ -61,9 +70,10 @@ export async function listRequestedPullRequests(): Promise<PullRequestListItem[]
 export async function getPullRequestDetails(
   owner: string,
   repo: string,
-  pullNumber: number
+  pullNumber: number,
+  accessToken: string
 ): Promise<PullRequestDetail> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.request("GET /repos/{owner}/{repo}/pulls/{pull_number}", {
     owner,
     repo,
@@ -89,9 +99,10 @@ export async function getPullRequestDetails(
 export async function getPullRequestAnalysisContext(
   owner: string,
   repo: string,
-  pullNumber: number
+  pullNumber: number,
+  accessToken: string
 ): Promise<PullRequestAnalysisContext> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
 
   const [pullResponse, filesResponse] = await Promise.all([
     octokit.request("GET /repos/{owner}/{repo}/pulls/{pull_number}", {
@@ -123,4 +134,10 @@ export async function getPullRequestAnalysisContext(
       patch: file.patch ?? null,
     })),
   };
+}
+
+export async function loadAuthenticatedGitHubUser(
+  accessToken: string
+) {
+  return getAuthenticatedGitHubUser({ accessToken });
 }

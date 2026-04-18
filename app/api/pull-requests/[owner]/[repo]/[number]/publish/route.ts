@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getAuthenticatedAppUser } from "@/lib/auth";
 import { buildPullRequestReviewCommentMarkdown } from "@/lib/formatters/pr-review-comment";
 import { resolveInlineReviewPayload } from "@/lib/github-inline-review";
 import {
@@ -35,7 +36,7 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Erro desconhecido ao publicar comentarios no GitHub.";
+  return "Erro desconhecido ao publicar comentários no GitHub.";
 }
 
 function buildFailedSuggestionPublishResult(
@@ -81,13 +82,23 @@ export async function POST(
   { params }: PublishPullRequestRouteContext
 ) {
   try {
+    const authenticatedUser = await getAuthenticatedAppUser();
+
+    if (!authenticatedUser) {
+      const unauthorizedPayload: PublishPullRequestSuggestionsErrorResponse = {
+        error: "Sessão inválida. Faça login novamente.",
+      };
+
+      return Response.json(unauthorizedPayload, { status: 401 });
+    }
+
     const parsedParams = publishPullRequestParamsSchema.parse(await params);
     const requestBody = (await request.json()) as unknown;
     const parsedBody = publishPullRequestSuggestionsRequestSchema.parse(requestBody);
 
     if (parsedBody.suggestions.length === 0) {
       const payload: PublishPullRequestSuggestionsErrorResponse = {
-        error: "Nenhuma sugestao aprovada foi enviada para publicacao.",
+        error: "Nenhuma sugestão aprovada foi enviada para publicação.",
       };
 
       return Response.json(payload, { status: 400 });
@@ -98,11 +109,13 @@ export async function POST(
       owner: parsedParams.owner,
       repo: parsedParams.repo,
       pullNumber: parsedParams.number,
+      accessToken: authenticatedUser.accessToken,
     });
     const pullRequestFiles = await listPullRequestFiles({
       owner: parsedParams.owner,
       repo: parsedParams.repo,
       pullNumber: parsedParams.number,
+      accessToken: authenticatedUser.accessToken,
     });
     const filesByPath = new Map(
       pullRequestFiles.map((file) => [file.filePath, file] as const)
@@ -130,6 +143,7 @@ export async function POST(
           path: inlineResolution.payload.path,
           line: inlineResolution.payload.line,
           side: inlineResolution.payload.side,
+          accessToken: authenticatedUser.accessToken,
         });
 
         suggestionResultsById.set(suggestion.id, {
@@ -143,7 +157,7 @@ export async function POST(
       } catch (error: unknown) {
         inlineAttemptErrorsById.set(
           suggestion.id,
-          `Nao foi possivel publicar o comentario inline: ${toErrorMessage(error)}`
+          `Não foi possível publicar o comentário inline: ${toErrorMessage(error)}`
         );
         suggestionsForConsolidatedComment.push(suggestion);
       }
@@ -162,6 +176,7 @@ export async function POST(
           repo: parsedParams.repo,
           pullNumber: parsedParams.number,
           body: commentBody,
+          accessToken: authenticatedUser.accessToken,
         });
 
         consolidatedCommentUrl = createdComment.url;
@@ -177,7 +192,7 @@ export async function POST(
           });
         }
       } catch (error: unknown) {
-        const consolidatedErrorMessage = `Nao foi possivel publicar o comentario consolidado: ${toErrorMessage(
+        const consolidatedErrorMessage = `Não foi possível publicar o comentário consolidado: ${toErrorMessage(
           error
         )}`;
 
@@ -200,7 +215,7 @@ export async function POST(
         suggestionResultsById.get(suggestion.id) ??
         buildFailedSuggestionPublishResult(
           suggestion.id,
-          "Nao foi possivel obter o resultado da publicacao desta sugestao."
+          "Não foi possível obter o resultado da publicação desta sugestão."
         )
     );
 
@@ -216,8 +231,8 @@ export async function POST(
     const isValidationError = error instanceof z.ZodError;
     const payload: PublishPullRequestSuggestionsErrorResponse = {
       error: isValidationError
-        ? "Dados invalidos para publicar sugestoes."
-        : `Nao foi possivel publicar as sugestoes no GitHub. ${toErrorMessage(error)}`,
+        ? "Dados inválidos para publicar sugestões."
+        : `Não foi possível publicar as sugestões no GitHub. ${toErrorMessage(error)}`,
     };
 
     return Response.json(payload, { status: isValidationError ? 400 : 500 });

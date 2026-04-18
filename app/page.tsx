@@ -24,6 +24,7 @@ type DashboardState =
   | {
       status: "loaded";
       pullRequests: PullRequestListItem[];
+      githubUserStorageKey: string;
     };
 
 function toErrorMessage(error: unknown): string {
@@ -31,7 +32,7 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Nao foi possivel carregar os Pull Requests.";
+  return "Não foi possível carregar os Pull Requests.";
 }
 
 type PullRequestWithLocalReviewState = {
@@ -55,7 +56,7 @@ export default function HomePage() {
           const message =
             "error" in payload
               ? payload.error
-              : "Nao foi possivel buscar os Pull Requests pendentes.";
+              : "Não foi possível buscar os Pull Requests pendentes.";
 
           if (!cancelled) {
             setState({ status: "error", message });
@@ -65,16 +66,19 @@ export default function HomePage() {
         }
 
         if (!("pullRequests" in payload)) {
-          throw new Error("Resposta invalida da API de Pull Requests.");
+          throw new Error("Resposta inválida da API de Pull Requests.");
         }
 
         if (!cancelled) {
+          const githubUserStorageKey = payload.authenticatedUser.storageKey;
+
           setState(
             payload.pullRequests.length === 0
               ? { status: "empty" }
               : {
                   status: "loaded",
                   pullRequests: payload.pullRequests,
+                  githubUserStorageKey,
                 }
           );
         }
@@ -82,7 +86,7 @@ export default function HomePage() {
         if (!cancelled) {
           setState({
             status: "error",
-            message: `Nao foi possivel carregar os Pull Requests. ${toErrorMessage(error)}`,
+            message: `Não foi possível carregar os Pull Requests. ${toErrorMessage(error)}`,
           });
         }
       }
@@ -103,6 +107,7 @@ export default function HomePage() {
     return state.pullRequests.map((pullRequest) => ({
       pullRequest,
       reviewState: readPullRequestLocalReviewState({
+        githubUserKey: state.githubUserStorageKey,
         owner: pullRequest.repositoryOwner,
         repo: pullRequest.repositoryName,
         pullNumber: pullRequest.number,
@@ -124,10 +129,10 @@ export default function HomePage() {
       <header className="mb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-            Pull Requests para revisao
+            Pull Requests para revisão
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            PRs abertos em que voce foi solicitado como reviewer.
+            PRs abertos em que você foi solicitado como revisor.
           </p>
         </div>
       </header>

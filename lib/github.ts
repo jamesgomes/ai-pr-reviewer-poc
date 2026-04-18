@@ -2,34 +2,24 @@ import { Octokit } from "octokit";
 import type { AuthenticatedGitHubUser } from "@/types/github-user";
 import type { PullRequestPublishFileContext } from "@/lib/github-inline-review";
 
-function readRequiredEnv(name: "GITHUB_TOKEN" | "GITHUB_USERNAME"): string {
-  const value = process.env[name];
+type AuthenticatedGitHubRequestInput = {
+  accessToken: string;
+};
 
-  if (!value || value.trim().length === 0) {
-    throw new Error(`${name} nao esta definido no .env.local`);
-  }
-
-  return value;
-}
-
-export function getGitHubClient(): Octokit {
-  const token = readRequiredEnv("GITHUB_TOKEN");
-
+function createGitHubClient(accessToken: string): Octokit {
   return new Octokit({
-    auth: token,
+    auth: accessToken,
   });
 }
 
-export function getGitHubUsername(): string {
-  return readRequiredEnv("GITHUB_USERNAME");
-}
-
-export async function getAuthenticatedGitHubUser(): Promise<AuthenticatedGitHubUser> {
-  const octokit = getGitHubClient();
+export async function getAuthenticatedGitHubUser({
+  accessToken,
+}: AuthenticatedGitHubRequestInput): Promise<AuthenticatedGitHubUser> {
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.request("GET /user");
 
   return {
-    id: response.data.id,
+    id: String(response.data.id),
     login: response.data.login,
     name: response.data.name,
     avatarUrl: response.data.avatar_url,
@@ -37,10 +27,14 @@ export async function getAuthenticatedGitHubUser(): Promise<AuthenticatedGitHubU
   };
 }
 
-type CreatePullRequestCommentInput = {
+type PullRequestCoordinatesInput = {
   owner: string;
   repo: string;
   pullNumber: number;
+  accessToken: string;
+};
+
+type CreatePullRequestCommentInput = PullRequestCoordinatesInput & {
   body: string;
 };
 
@@ -49,8 +43,9 @@ export async function createPullRequestComment({
   repo,
   pullNumber,
   body,
+  accessToken,
 }: CreatePullRequestCommentInput): Promise<{ id: number; url: string }> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.request("POST /repos/{owner}/{repo}/issues/{issue_number}/comments", {
     owner,
     repo,
@@ -64,12 +59,6 @@ export async function createPullRequestComment({
   };
 }
 
-type PullRequestCoordinatesInput = {
-  owner: string;
-  repo: string;
-  pullNumber: number;
-};
-
 type CreatePullRequestInlineCommentInput = PullRequestCoordinatesInput & {
   body: string;
   commitId: string;
@@ -82,8 +71,9 @@ export async function getPullRequestHeadSha({
   owner,
   repo,
   pullNumber,
+  accessToken,
 }: PullRequestCoordinatesInput): Promise<string> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.request("GET /repos/{owner}/{repo}/pulls/{pull_number}", {
     owner,
     repo,
@@ -97,8 +87,9 @@ export async function listPullRequestFiles({
   owner,
   repo,
   pullNumber,
+  accessToken,
 }: PullRequestCoordinatesInput): Promise<PullRequestPublishFileContext[]> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.paginate("GET /repos/{owner}/{repo}/pulls/{pull_number}/files", {
     owner,
     repo,
@@ -121,8 +112,9 @@ export async function createPullRequestInlineComment({
   path,
   line,
   side,
+  accessToken,
 }: CreatePullRequestInlineCommentInput): Promise<{ id: number; url: string }> {
-  const octokit = getGitHubClient();
+  const octokit = createGitHubClient(accessToken);
   const response = await octokit.request("POST /repos/{owner}/{repo}/pulls/{pull_number}/comments", {
     owner,
     repo,

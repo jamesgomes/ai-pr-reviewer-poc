@@ -6,6 +6,7 @@ import {
 const PULL_REQUEST_ANALYSIS_STORAGE_PREFIX = "pr-review-assistant:analysis";
 
 type PullRequestAnalysisStorageKeyInput = {
+  githubUserKey: string;
   owner: string;
   repo: string;
   pullNumber: number;
@@ -21,14 +22,16 @@ function canUseLocalStorage(): boolean {
 }
 
 export function buildPullRequestAnalysisStorageKey({
+  githubUserKey,
   owner,
   repo,
   pullNumber,
 }: PullRequestAnalysisStorageKeyInput): string {
-  return `${PULL_REQUEST_ANALYSIS_STORAGE_PREFIX}:${owner}:${repo}:${pullNumber}`;
+  return `${PULL_REQUEST_ANALYSIS_STORAGE_PREFIX}:${githubUserKey}:${owner}:${repo}:${pullNumber}`;
 }
 
 export function readPersistedPullRequestAnalysis({
+  githubUserKey,
   owner,
   repo,
   pullNumber,
@@ -38,6 +41,7 @@ export function readPersistedPullRequestAnalysis({
   }
 
   const storageKey = buildPullRequestAnalysisStorageKey({
+    githubUserKey,
     owner,
     repo,
     pullNumber,

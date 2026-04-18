@@ -62,7 +62,7 @@ function getSuggestionCardStyle(suggestion: PullRequestReviewSuggestion): string
 
 const publishModeLabel: Record<PullRequestSuggestionPublishMode, string> = {
   inline: "Publicada inline",
-  consolidated: "Publicada em comentario consolidado",
+  consolidated: "Publicada em comentário consolidado",
 };
 
 function formatPublishedAt(value: string | null): string | null {
@@ -146,7 +146,7 @@ export function PullRequestSuggestionItem({
           </h4>
 
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-            {suggestion.filePath !== null ? suggestion.filePath : "Arquivo nao disponivel"}
+            {suggestion.filePath !== null ? suggestion.filePath : "Arquivo não disponível"}
             {suggestion.line !== null ? `:${suggestion.line}` : ""}
           </p>
 
@@ -164,7 +164,7 @@ export function PullRequestSuggestionItem({
                 rel="noreferrer"
                 className={buttonVariants("secondary")}
               >
-                Ver comentario no GitHub
+                Ver comentário no GitHub
               </a>
             </div>
           )}
@@ -203,7 +203,7 @@ export function PullRequestSuggestionItem({
 
       {suggestion.publishError && (
         <p className="mt-3 rounded-md border border-red-300 bg-red-50 p-3 text-xs text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
-          Nao foi possivel publicar esta sugestao: {suggestion.publishError}
+          Não foi possível publicar esta sugestão: {suggestion.publishError}
         </p>
       )}
 
@@ -218,11 +218,11 @@ export function PullRequestSuggestionItem({
       <div className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Comentario para publicar no PR
+            Comentário sugerido para revisão
           </p>
           {suggestion.editedComment !== null && !isCommentEditing && (
             <span className="inline-flex rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
-              Comentario editado
+              Comentário editado
             </span>
           )}
         </div>

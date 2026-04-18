@@ -68,7 +68,7 @@ export function PullRequestListItemRow({
             />
             <span>Atualizado em {formatUpdatedAt(pullRequest.updatedAt)}</span>
             {isReviewed && reviewState?.lastPublishedAt && (
-              <span>Ultima publicacao: {formatPublishedAt(reviewState.lastPublishedAt)}</span>
+              <span>Última publicação: {formatPublishedAt(reviewState.lastPublishedAt)}</span>
             )}
           </div>
         </div>

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 type PullRequestAnalysisSectionClientProps = {
+  githubUserKey: string;
   owner: string;
   repo: string;
   pullNumber: number;
