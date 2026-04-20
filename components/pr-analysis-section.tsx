@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PublishStatusBanner } from "@/components/publish-status-banner";
 import { PullRequestSuggestionItem } from "@/components/pr-suggestion-item";
+import { reconcileReviewSuggestionsAfterReanalysis } from "@/lib/pr-analysis-reconciliation";
 import {
   readPersistedPullRequestAnalysis,
   writePersistedPullRequestAnalysis,
@@ -227,7 +228,11 @@ export function PullRequestAnalysisSection({
       }
 
       const nextAnalysisSummary = payload.analysis.summary;
-      const nextReviewSuggestions = toReviewSuggestions(payload.analysis.suggestions);
+      const incomingReviewSuggestions = toReviewSuggestions(payload.analysis.suggestions);
+      const nextReviewSuggestions = reconcileReviewSuggestionsAfterReanalysis({
+        currentSuggestions: reviewSuggestions,
+        incomingSuggestions: incomingReviewSuggestions,
+      });
       const nextCodeContextPatchesByFilePath = toPatchMap(payload.codeContextFiles);
 
       setAnalysisSummary(nextAnalysisSummary);
