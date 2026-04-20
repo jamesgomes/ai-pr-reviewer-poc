@@ -1,13 +1,14 @@
-# AI PR Reviewer POC
 
-POC local para apoiar revisao de Pull Requests com IA.
+# AI PR Reviewer
+
+Aplicação local para apoiar revisão de Pull Requests com IA.
 
 ## Objetivo
 
-- Buscar PRs em que o usuario foi solicitado como reviewer.
-- Permitir abrir o detalhe do PR.
-- Rodar analise de PR com IA sob demanda.
-- Exibir resumo e sugestoes estruturadas para revisao.
+- Buscar PRs em que o usuário foi solicitado como reviewer
+- Permitir abrir o detalhe do PR
+- Rodar análise de PR com IA sob demanda
+- Exibir resumo e sugestões estruturadas para revisão
 
 ## Stack
 
@@ -16,20 +17,19 @@ POC local para apoiar revisao de Pull Requests com IA.
 - Tailwind CSS
 - Octokit (GitHub)
 - OpenAI SDK (somente no servidor)
-- Zod (validacao e structured output)
-- MongoDB local (preparado para as proximas specs)
+- Zod (validação e structured output)
 
 ## Funcionalidades implementadas
 
-- Home com lista de PRs pendentes de revisao.
-- Tela de detalhe do PR com descricao em markdown preview.
-- Botao "Analisar com IA" no detalhe do PR.
-- Execucao da analise no backend.
-- Exibicao de estados de loading, erro e sucesso.
-- Resposta tipada da IA com `summary` e `suggestions[]`.
-- Cada `suggestion` contem `id`, `severity`, `category`, `title`, `description`, `suggestedComment`, `filePath`, `line`.
+- Home com lista de PRs pendentes de revisão
+- Tela de detalhe do PR com descrição em markdown preview
+- Botão "Analisar com IA" no detalhe do PR
+- Execução da análise no backend
+- Exibição de estados de loading, erro e sucesso
+- Resposta tipada da IA com `summary` e `suggestions[]`
+- Cada `suggestion` contém `id`, `severity`, `category`, `title`, `description`, `suggestedComment`, `filePath`, `line`
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
 Crie um arquivo `.env.local` na raiz:
 
@@ -37,26 +37,24 @@ Crie um arquivo `.env.local` na raiz:
 GITHUB_TOKEN=seu_token_github
 GITHUB_USERNAME=seu_login_github
 
-MONGODB_URI=mongodb://127.0.0.1:27017/ai-pr-reviewer-poc
-MONGODB_DB=ai-pr-reviewer-poc
-
 OPENAI_API_KEY=sua_chave_openai
 OPENAI_MODEL=gpt-5.2
 
-NEXT_PUBLIC_APP_NAME=AI PR Reviewer POC
+NEXT_PUBLIC_APP_NAME=AI PR Reviewer
 ```
 
 Notas:
 
-- `OPENAI_MODEL` e opcional. Se nao for definido, o sistema usa `gpt-5.2`.
-- Nao exponha tokens e chaves no cliente.
+- `OPENAI_MODEL` é opcional. Se não for definido, o sistema usa `gpt-5.2`.
+- Não exponha tokens e chaves no cliente.
 
-## Prompt da analise de IA
+## Prompt da análise de IA
 
-- Instrucoes da IA: `docs/prompts/pr-analysis-instructions.md`
+- Instruções da IA: `docs/prompts/pr-analysis-instructions.md`
 - Montagem do contexto/prompt: `lib/prompts/pr-analysis.ts`
 - Chamada OpenAI: `lib/openai.ts`
-- Schema tipado de saida: `types/pr-analysis.ts`
+- Schema tipado de saída: `types/pr-analysis.ts`
+
 
 ## Rodando localmente
 
@@ -69,31 +67,27 @@ Abra `http://localhost:3000`.
 
 ## Scripts
 
-- `npm run dev`: sobe ambiente local.
-- `npm run lint`: executa lint.
-- `npm run build`: valida build de producao.
-- `npm run start`: sobe app apos build.
+- `npm run dev`: sobe ambiente local
+- `npm run lint`: executa lint
+- `npm run build`: valida build de produção
+- `npm run start`: sobe app após build
 
 ## Rotas principais
 
-- `GET /`: dashboard com PRs pendentes.
-- `GET /pull-requests/[owner]/[repo]/[number]`: detalhe do PR.
-- `GET /api/pull-requests`: lista PRs solicitados para review.
-- `POST /api/pull-requests/[owner]/[repo]/[number]/analyze`: executa analise com IA.
-- `GET /api/health`: healthcheck simples.
+- `GET /`: dashboard com PRs pendentes
+- `GET /pull-requests/[owner]/[repo]/[number]`: detalhe do PR
+- `GET /api/pull-requests`: lista PRs solicitados para review
+- `POST /api/pull-requests/[owner]/[repo]/[number]/analyze`: executa análise com IA
+- `GET /api/health`: healthcheck simples
 
 ## Estrutura de pastas
 
-- `app/`: paginas e rotas (App Router).
-- `components/`: componentes de UI.
-- `lib/`: integracoes e servicos (GitHub, OpenAI, prompts).
-- `types/`: contratos e tipos compartilhados.
-- `specs/`: especificacoes que guiam a implementacao.
-- `docs/`: documentacao auxiliar (inclui prompts).
+- `app/`: páginas e rotas (App Router)
+- `components/`: componentes de UI
+- `lib/`: integrações e serviços (GitHub, OpenAI, prompts)
+- `types/`: contratos e tipos compartilhados
+- `specs/`: especificações que guiam a implementação
+- `docs/`: documentação auxiliar (inclui prompts)
 
-## Limites desta fase (POC)
-
-- Nao ha aprovacao/rejeicao/edicao de sugestoes ainda.
-- Nao publica comentarios no GitHub nesta versao.
-- Nao ha persistencia historica da analise no MongoDB nesta etapa.
-- Nao cobre processamento em background ou multiusuario.
+---
+_Arquivo gerado com auxílio de IA (Genesis). Pode conter erros. Contexto: PL-025 e GD-001 da Minu._
