@@ -20,7 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const callbackUrl = resolvedSearchParams?.callbackUrl?.trim() || "/";
 
   return (
-    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-zinc-100 via-zinc-50 to-white px-4 py-10 dark:from-[#0a0b10] dark:via-[#0a0b10] dark:to-black sm:px-6">
+    <main className="relative isolate flex h-full items-center justify-center overflow-hidden bg-gradient-to-b from-zinc-100 via-zinc-50 to-white px-4 py-10 dark:from-[#0a0b10] dark:via-[#0a0b10] dark:to-black sm:px-6">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_42%),radial-gradient(circle_at_bottom,rgba(8,145,178,0.14),transparent_38%)] dark:bg-[radial-gradient(circle_at_top,rgba(29,78,216,0.18),transparent_42%),radial-gradient(circle_at_bottom,rgba(14,116,144,0.12),transparent_38%)]"
