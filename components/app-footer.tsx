@@ -1,8 +1,14 @@
+import packageJson from "@/package.json";
+
 export function AppFooter() {
+  const serviceVersion = `v${packageJson.version}`;
+
   return (
     <footer className="border-t border-zinc-200/80 py-4 dark:border-zinc-800/80">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">Built by James Gomes</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          Built by James Gomes · Service {serviceVersion}
+        </p>
         <nav
           aria-label="Professional links"
           className="flex items-center gap-3 text-xs"
