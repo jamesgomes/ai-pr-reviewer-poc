@@ -63,7 +63,7 @@ A resposta deve conter:
 Cada item de `suggestions` deve conter:
 - `id`: identificador único da sugestão
 - `severity`: um dos valores `low`, `medium`, `high`
-- `category`: categoria da sugestão, como `bug`, `performance`, `security`, `readability`, `testing`, `api-contract`
+- `category`: categoria da sugestão, como `bug`, `performance`, `security`, `readability`, `testing`, `api-contract`, `observability`, `dependency`
 - `title`: título curto da sugestão
 - `description`: explicação objetiva do problema encontrado
 - `suggestedComment`: comentário sugerido para uso em review

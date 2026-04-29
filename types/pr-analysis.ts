@@ -9,6 +9,8 @@ export const pullRequestAnalysisCategorySchema = z.enum([
   "readability",
   "testing",
   "api-contract",
+  "observability",
+  "dependency",
   "other",
 ]);
 
