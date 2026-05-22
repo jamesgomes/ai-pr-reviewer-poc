@@ -14,6 +14,8 @@ import type {
 type PullRequestSuggestionItemProps = {
   suggestion: PullRequestReviewSuggestion;
   codePatch: string | null;
+  repositoryOwner: string;
+  repositoryName: string;
   onChangeStatus: (id: string, status: PullRequestSuggestionStatus) => void;
   onSaveEditedComment: (id: string, editedComment: string) => void;
 };
@@ -82,9 +84,30 @@ function formatPublishedAt(value: string | null): string | null {
   });
 }
 
+function toGitHubFilePath(filePath: string): string {
+  return filePath
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function toGitHubFileUrl(
+  repositoryOwner: string,
+  repositoryName: string,
+  filePath: string,
+  line: number | null
+): string {
+  const encodedPath = toGitHubFilePath(filePath);
+  const lineAnchor = line !== null ? `#L${line}` : "";
+
+  return `https://github.com/${encodeURIComponent(repositoryOwner)}/${encodeURIComponent(repositoryName)}/blob/HEAD/${encodedPath}${lineAnchor}`;
+}
+
 export function PullRequestSuggestionItem({
   suggestion,
   codePatch,
+  repositoryOwner,
+  repositoryName,
   onChangeStatus,
   onSaveEditedComment,
 }: PullRequestSuggestionItemProps) {
@@ -149,6 +172,21 @@ export function PullRequestSuggestionItem({
             {suggestion.filePath !== null ? suggestion.filePath : "Arquivo não disponível"}
             {suggestion.line !== null ? `:${suggestion.line}` : ""}
           </p>
+          {suggestion.filePath !== null && (
+            <a
+              href={toGitHubFileUrl(
+                repositoryOwner,
+                repositoryName,
+                suggestion.filePath,
+                suggestion.line
+              )}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-flex text-xs text-[var(--app-primary)] underline underline-offset-2 hover:text-[var(--app-primary-focus)]"
+            >
+              Abrir arquivo no GitHub
+            </a>
+          )}
 
           {formattedPublishedAt && (
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">

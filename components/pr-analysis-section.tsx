@@ -704,6 +704,8 @@ export function PullRequestAnalysisSection({
                           ? (codeContextPatchesByFilePath[suggestion.filePath] ?? null)
                           : null
                       }
+                      repositoryOwner={owner}
+                      repositoryName={repo}
                       onChangeStatus={updateSuggestionStatus}
                       onSaveEditedComment={saveEditedComment}
                     />
