@@ -4,10 +4,12 @@ import dynamic from "next/dynamic";
 
 type PullRequestAnalysisSectionClientProps = {
   githubUserKey: string;
+  authenticatedGithubLogin: string;
   owner: string;
   repo: string;
   pullNumber: number;
   pullRequestState: "open" | "closed";
+  pullRequestAuthorLogin: string;
 };
 
 const PullRequestAnalysisSection = dynamic(

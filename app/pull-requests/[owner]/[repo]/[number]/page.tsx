@@ -175,10 +175,12 @@ export default async function PullRequestDetailsPage({
       <PullRequestAnalysisSectionClient
         key={`${pullRequest.repositoryOwner}/${pullRequest.repositoryName}/${pullRequest.number}`}
         githubUserKey={authenticatedUser.storageKey}
+        authenticatedGithubLogin={authenticatedUser.githubLogin}
         owner={pullRequest.repositoryOwner}
         repo={pullRequest.repositoryName}
         pullNumber={pullRequest.number}
         pullRequestState={pullRequest.state}
+        pullRequestAuthorLogin={pullRequest.authorLogin}
       />
     </main>
   );

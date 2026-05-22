@@ -103,6 +103,22 @@ export async function getPullRequestHeadSha({
   return response.data.head.sha;
 }
 
+export async function getPullRequestAuthorLogin({
+  owner,
+  repo,
+  pullNumber,
+  accessToken,
+}: PullRequestCoordinatesInput): Promise<string | null> {
+  const octokit = createGitHubClient(accessToken);
+  const response = await octokit.request("GET /repos/{owner}/{repo}/pulls/{pull_number}", {
+    owner,
+    repo,
+    pull_number: pullNumber,
+  });
+
+  return response.data.user?.login ?? null;
+}
+
 export async function listPullRequestFiles({
   owner,
   repo,

@@ -38,6 +38,7 @@ Explicitly excluded. Documented to prevent scope creep.
 3. WHEN a aprovação for concluída com sucesso THEN o sistema SHALL exibir feedback de sucesso na interface.
 4. WHEN houver falha na aprovação THEN o sistema SHALL exibir mensagem de erro clara e não marcar o PR como aprovado localmente.
 5. WHEN o PR não estiver em estado aberto THEN o sistema SHALL desabilitar ou ocultar a ação de aprovação e informar o motivo.
+6. WHEN o PR tiver sido aberto pelo próprio usuário autenticado THEN o sistema SHALL manter a ação de aprovação desabilitada e informar que autor do PR não pode aprovar a própria alteração nesse fluxo.
 
 **Independent Test**: Em um PR aberto, acionar a aprovação pela tela de análise e confirmar que o status de review no GitHub foi registrado como aprovado pela conta autenticada.
 
@@ -80,6 +81,7 @@ Explicitly excluded. Documented to prevent scope creep.
 - WHEN houver erro de permissão no repositório (ex.: usuário sem poder de review) THEN o sistema SHALL exibir erro claro sem marcar aprovação local.
 - WHEN o usuário disparar múltiplos cliques rápidos na ação de aprovação THEN o sistema SHALL processar apenas uma tentativa por vez.
 - WHEN a API do GitHub retornar erro transitório THEN o sistema SHALL manter o estado local inalterado e permitir nova tentativa manual.
+- WHEN o autor do PR for o mesmo usuário autenticado THEN o sistema SHALL bloquear a aprovação na interface antes da chamada da API.
 
 ---
 
@@ -92,13 +94,14 @@ Explicitly excluded. Documented to prevent scope creep.
 | PR-APPROVAL-03 | P1: Aprovar PR sem sair da tela de análise | Design | Pending |
 | PR-APPROVAL-04 | P1: Aprovar PR sem sair da tela de análise | Design | Pending |
 | PR-APPROVAL-05 | P1: Aprovar PR sem sair da tela de análise | Design | Pending |
+| PR-APPROVAL-11 | P1: Aprovar PR sem sair da tela de análise | Design | Pending |
 | PR-APPROVAL-06 | P2: Persistência local do estado de aprovação | Design | Pending |
 | PR-APPROVAL-07 | P2: Persistência local do estado de aprovação | Design | Pending |
 | PR-APPROVAL-08 | P2: Persistência local do estado de aprovação | Design | Pending |
 | PR-APPROVAL-09 | P3: Integração com indicadores de revisão da home | Design | Pending |
 | PR-APPROVAL-10 | P3: Integração com indicadores de revisão da home | Design | Pending |
 
-Coverage: 10 total, 0 mapped to tasks, 10 unmapped.
+Coverage: 11 total, 0 mapped to tasks, 11 unmapped.
 
 ---
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getAuthenticatedAppUser } from "@/lib/auth";
-import { approvePullRequest } from "@/lib/github";
+import { approvePullRequest, getPullRequestAuthorLogin } from "@/lib/github";
 import type {
   ApprovePullRequestErrorResponse,
   ApprovePullRequestResponse,
@@ -28,6 +28,10 @@ function toErrorMessage(error: unknown): string {
   return "Erro desconhecido ao aprovar o Pull Request.";
 }
 
+function normalizeGitHubLogin(login: string | null): string {
+  return login?.trim().toLowerCase() ?? "";
+}
+
 export async function POST(
   _request: Request,
   { params }: ApprovePullRequestRouteContext
@@ -44,6 +48,24 @@ export async function POST(
     }
 
     const parsedParams = approvePullRequestParamsSchema.parse(await params);
+    const pullRequestAuthorLogin = await getPullRequestAuthorLogin({
+      owner: parsedParams.owner,
+      repo: parsedParams.repo,
+      pullNumber: parsedParams.number,
+      accessToken: authenticatedUser.accessToken,
+    });
+
+    if (
+      normalizeGitHubLogin(pullRequestAuthorLogin) ===
+      normalizeGitHubLogin(authenticatedUser.githubLogin)
+    ) {
+      const payload: ApprovePullRequestErrorResponse = {
+        error: "Não é permitido aprovar Pull Request de autoria própria neste fluxo.",
+      };
+
+      return Response.json(payload, { status: 403 });
+    }
+
     const approvalResult = await approvePullRequest({
       owner: parsedParams.owner,
       repo: parsedParams.repo,

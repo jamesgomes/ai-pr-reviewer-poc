@@ -28,10 +28,12 @@ import type {
 
 type PullRequestAnalysisSectionProps = {
   githubUserKey: string;
+  authenticatedGithubLogin: string;
   owner: string;
   repo: string;
   pullNumber: number;
   pullRequestState: "open" | "closed";
+  pullRequestAuthorLogin: string;
 };
 
 type PublishSuccessState = {
@@ -168,10 +170,12 @@ function toSuggestionResultMap(results: PublishSuggestionResult[]): Map<string, 
 
 export function PullRequestAnalysisSection({
   githubUserKey,
+  authenticatedGithubLogin,
   owner,
   repo,
   pullNumber,
   pullRequestState,
+  pullRequestAuthorLogin,
 }: PullRequestAnalysisSectionProps) {
   const [persistedAnalysisOnMount] = useState(() =>
     readPersistedPullRequestAnalysis({
@@ -514,7 +518,11 @@ export function PullRequestAnalysisSection({
     approved: suggestionCounters.approved,
     rejected: suggestionCounters.rejected,
   };
-  const canApprovePullRequest = pullRequestState === "open" && !reviewApproval.approved;
+  const isOwnPullRequest =
+    pullRequestAuthorLogin.trim().toLowerCase() ===
+    authenticatedGithubLogin.trim().toLowerCase();
+  const canApprovePullRequest =
+    pullRequestState === "open" && !reviewApproval.approved && !isOwnPullRequest;
 
   return (
     <section className="mt-4 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas)]">
@@ -565,6 +573,12 @@ export function PullRequestAnalysisSection({
         {pullRequestState !== "open" && (
           <p className="mb-4 rounded-[11px] border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
             Este Pull Request não está aberto. A aprovação foi desabilitada.
+          </p>
+        )}
+
+        {pullRequestState === "open" && isOwnPullRequest && (
+          <p className="mb-4 rounded-[11px] border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+            Este Pull Request foi aberto por você. A aprovação está desabilitada neste fluxo.
           </p>
         )}
 
