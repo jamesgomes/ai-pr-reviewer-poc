@@ -178,6 +178,7 @@ export default async function PullRequestDetailsPage({
         owner={pullRequest.repositoryOwner}
         repo={pullRequest.repositoryName}
         pullNumber={pullRequest.number}
+        pullRequestState={pullRequest.state}
       />
     </main>
   );

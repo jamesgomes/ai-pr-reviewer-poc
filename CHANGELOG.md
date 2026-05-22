@@ -9,6 +9,14 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e ve
 ### Adicionado
 - Sem mudanças registradas no momento.
 
+## [0.3.0] - 2026-05-22
+
+### Alterado
+- Atualização de versão do projeto para `0.3.0`.
+- Implementada a aprovação de Pull Request na página de análise com ação explícita na interface.
+- Adicionada nova API `POST /api/pull-requests/[owner]/[repo]/[number]/approve` para registrar aprovação no GitHub.
+- Incluída persistência local do estado de aprovação por usuário/PR e integração com status de PR revisado na home.
+
 ## [0.2.0] - 2026-05-22
 
 ### Alterado

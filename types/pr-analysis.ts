@@ -41,6 +41,13 @@ export const pullRequestSuggestionPublishModeSchema = z.enum([
   "consolidated",
 ]);
 
+export const pullRequestReviewApprovalSchema = z.object({
+  approved: z.boolean().default(false),
+  approvedAt: z.string().nullable().default(null),
+  approvalUrl: z.string().min(1).nullable().default(null),
+  approvalError: z.string().nullable().default(null),
+});
+
 export const pullRequestReviewSuggestionSchema =
   pullRequestAnalysisSuggestionSchema.extend({
     status: pullRequestSuggestionStatusSchema,
@@ -58,9 +65,15 @@ export const pullRequestAnalysisCodeContextFileSchema = z.object({
 });
 
 export const persistedPullRequestAnalysisSchema = z.object({
-  analysisSummary: z.string().min(1),
+  analysisSummary: z.string().min(1).nullable(),
   reviewSuggestions: z.array(pullRequestReviewSuggestionSchema),
   codeContextFiles: z.array(pullRequestAnalysisCodeContextFileSchema),
+  reviewApproval: pullRequestReviewApprovalSchema.default({
+    approved: false,
+    approvedAt: null,
+    approvalUrl: null,
+    approvalError: null,
+  }),
   savedAt: z.string().min(1),
 });
 
@@ -114,6 +127,9 @@ export type PullRequestSuggestionPublishMode = z.infer<
 export type PullRequestReviewSuggestion = z.infer<
   typeof pullRequestReviewSuggestionSchema
 >;
+export type PullRequestReviewApproval = z.infer<
+  typeof pullRequestReviewApprovalSchema
+>;
 
 export type PullRequestAnalysisFileContext = {
   filePath: string;
@@ -148,6 +164,16 @@ export type PullRequestAnalysisResponse = {
 };
 
 export type PullRequestAnalysisErrorResponse = {
+  error: string;
+};
+
+export type ApprovePullRequestResponse = {
+  ok: true;
+  approvedAt: string;
+  approvalUrl: string | null;
+};
+
+export type ApprovePullRequestErrorResponse = {
   error: string;
 };
 

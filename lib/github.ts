@@ -67,6 +67,26 @@ type CreatePullRequestInlineCommentInput = PullRequestCoordinatesInput & {
   side: "RIGHT";
 };
 
+export async function approvePullRequest({
+  owner,
+  repo,
+  pullNumber,
+  accessToken,
+}: PullRequestCoordinatesInput): Promise<{ id: number; url: string | null }> {
+  const octokit = createGitHubClient(accessToken);
+  const response = await octokit.request("POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews", {
+    owner,
+    repo,
+    pull_number: pullNumber,
+    event: "APPROVE",
+  });
+
+  return {
+    id: response.data.id,
+    url: response.data.html_url ?? null,
+  };
+}
+
 export async function getPullRequestHeadSha({
   owner,
   repo,

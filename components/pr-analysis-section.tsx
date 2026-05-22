@@ -11,11 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type {
+  ApprovePullRequestErrorResponse,
+  ApprovePullRequestResponse,
   PullRequestAnalysisCodeContextFile,
   PullRequestAnalysisErrorResponse,
   PullRequestAnalysisResponse,
   PublishPullRequestSuggestionsErrorResponse,
   PublishPullRequestSuggestionsResponse,
+  PullRequestReviewApproval,
   PublishSuggestionInput,
   PublishSuggestionResult,
   PullRequestReviewSuggestion,
@@ -28,6 +31,7 @@ type PullRequestAnalysisSectionProps = {
   owner: string;
   repo: string;
   pullNumber: number;
+  pullRequestState: "open" | "closed";
 };
 
 type PublishSuccessState = {
@@ -92,6 +96,28 @@ function formatSavedAt(value: string): string {
   });
 }
 
+function formatApprovedAt(value: string): string {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Data indisponível";
+  }
+
+  return parsedDate.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+function createDefaultReviewApproval(): PullRequestReviewApproval {
+  return {
+    approved: false,
+    approvedAt: null,
+    approvalUrl: null,
+    approvalError: null,
+  };
+}
+
 type SuggestionCounters = {
   pending: number;
   approved: number;
@@ -145,6 +171,7 @@ export function PullRequestAnalysisSection({
   owner,
   repo,
   pullNumber,
+  pullRequestState,
 }: PullRequestAnalysisSectionProps) {
   const [persistedAnalysisOnMount] = useState(() =>
     readPersistedPullRequestAnalysis({
@@ -172,11 +199,17 @@ export function PullRequestAnalysisSection({
   );
   const [publishSuccessState, setPublishSuccessState] = useState<PublishSuccessState | null>(null);
   const [publishErrorMessage, setPublishErrorMessage] = useState<string | null>(null);
+  const [reviewApproval, setReviewApproval] = useState<PullRequestReviewApproval>(
+    persistedAnalysisOnMount?.reviewApproval ?? createDefaultReviewApproval()
+  );
+  const [isApprovingPullRequest, setIsApprovingPullRequest] = useState(false);
+  const [approveErrorMessage, setApproveErrorMessage] = useState<string | null>(null);
 
   function persistLocalAnalysis(
-    nextAnalysisSummary: string,
+    nextAnalysisSummary: string | null,
     nextSuggestions: PullRequestReviewSuggestion[],
-    nextCodeContextPatchesByFilePath: Record<string, string | null>
+    nextCodeContextPatchesByFilePath: Record<string, string | null>,
+    nextReviewApproval: PullRequestReviewApproval
   ) {
     const savedAt = new Date().toISOString();
     const didPersist = writePersistedPullRequestAnalysis(
@@ -190,6 +223,7 @@ export function PullRequestAnalysisSection({
         analysisSummary: nextAnalysisSummary,
         reviewSuggestions: nextSuggestions,
         codeContextFiles: toCodeContextFiles(nextCodeContextPatchesByFilePath),
+        reviewApproval: nextReviewApproval,
         savedAt,
       }
     );
@@ -204,6 +238,7 @@ export function PullRequestAnalysisSection({
     setErrorMessage(null);
     setPublishSuccessState(null);
     setPublishErrorMessage(null);
+    setApproveErrorMessage(null);
 
     try {
       const response = await fetch(
@@ -242,7 +277,8 @@ export function PullRequestAnalysisSection({
       persistLocalAnalysis(
         nextAnalysisSummary,
         nextReviewSuggestions,
-        nextCodeContextPatchesByFilePath
+        nextCodeContextPatchesByFilePath,
+        reviewApproval
       );
     } catch (error: unknown) {
       setErrorMessage(`Não foi possível analisar o PR. ${toErrorMessage(error)}`);
@@ -262,9 +298,12 @@ export function PullRequestAnalysisSection({
           : suggestion
       );
 
-      if (analysisSummary) {
-        persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
-      }
+      persistLocalAnalysis(
+        analysisSummary,
+        nextSuggestions,
+        codeContextPatchesByFilePath,
+        reviewApproval
+      );
 
       return nextSuggestions;
     });
@@ -281,9 +320,12 @@ export function PullRequestAnalysisSection({
           : suggestion
       );
 
-      if (analysisSummary) {
-        persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
-      }
+      persistLocalAnalysis(
+        analysisSummary,
+        nextSuggestions,
+        codeContextPatchesByFilePath,
+        reviewApproval
+      );
 
       return nextSuggestions;
     });
@@ -367,9 +409,12 @@ export function PullRequestAnalysisSection({
           };
         });
 
-        if (analysisSummary) {
-          persistLocalAnalysis(analysisSummary, nextSuggestions, codeContextPatchesByFilePath);
-        }
+        persistLocalAnalysis(
+          analysisSummary,
+          nextSuggestions,
+          codeContextPatchesByFilePath,
+          reviewApproval
+        );
 
         return nextSuggestions;
       });
@@ -393,6 +438,71 @@ export function PullRequestAnalysisSection({
     }
   }
 
+  async function handleApprovePullRequest() {
+    if (pullRequestState !== "open" || reviewApproval.approved) {
+      return;
+    }
+
+    setIsApprovingPullRequest(true);
+    setApproveErrorMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/pull-requests/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${pullNumber}/approve`,
+        {
+          method: "POST",
+        }
+      );
+      const payload = (await response.json()) as
+        | ApprovePullRequestResponse
+        | ApprovePullRequestErrorResponse;
+
+      if (!response.ok) {
+        const message =
+          "error" in payload ? payload.error : "Não foi possível aprovar o Pull Request.";
+
+        throw new Error(message);
+      }
+
+      if (!("ok" in payload) || !payload.ok) {
+        throw new Error("Resposta inválida da API de aprovação.");
+      }
+
+      const nextReviewApproval: PullRequestReviewApproval = {
+        approved: true,
+        approvedAt: payload.approvedAt,
+        approvalUrl: payload.approvalUrl,
+        approvalError: null,
+      };
+
+      setReviewApproval(nextReviewApproval);
+      persistLocalAnalysis(
+        analysisSummary,
+        reviewSuggestions,
+        codeContextPatchesByFilePath,
+        nextReviewApproval
+      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Erro desconhecido ao aprovar o PR no GitHub.";
+      const failedReviewApproval: PullRequestReviewApproval = {
+        ...reviewApproval,
+        approvalError: message,
+      };
+
+      setReviewApproval(failedReviewApproval);
+      setApproveErrorMessage(message);
+      persistLocalAnalysis(
+        analysisSummary,
+        reviewSuggestions,
+        codeContextPatchesByFilePath,
+        failedReviewApproval
+      );
+    } finally {
+      setIsApprovingPullRequest(false);
+    }
+  }
+
   const suggestionCounters = calculateSuggestionCounters(reviewSuggestions);
   const filteredSuggestions =
     activeFilter === "all"
@@ -404,6 +514,7 @@ export function PullRequestAnalysisSection({
     approved: suggestionCounters.approved,
     rejected: suggestionCounters.rejected,
   };
+  const canApprovePullRequest = pullRequestState === "open" && !reviewApproval.approved;
 
   return (
     <section className="mt-4 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas)]">
@@ -416,13 +527,26 @@ export function PullRequestAnalysisSection({
             Analise as alterações deste PR com IA.
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={handleAnalyzePullRequest}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? "Analisando..." : "Analisar com IA"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleApprovePullRequest}
+            disabled={!canApprovePullRequest || isApprovingPullRequest}
+          >
+            {isApprovingPullRequest
+              ? "Aprovando..."
+              : reviewApproval.approved
+                ? "PR aprovado"
+                : "Aprovar PR no GitHub"}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleAnalyzePullRequest}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? "Analisando..." : "Analisar com IA"}
+          </Button>
+        </div>
       </header>
 
       <div className="px-4 py-4 sm:px-5">
@@ -435,6 +559,35 @@ export function PullRequestAnalysisSection({
         {errorMessage && (
           <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
             {errorMessage}
+          </p>
+        )}
+
+        {pullRequestState !== "open" && (
+          <p className="mb-4 rounded-[11px] border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+            Este Pull Request não está aberto. A aprovação foi desabilitada.
+          </p>
+        )}
+
+        {reviewApproval.approved && reviewApproval.approvedAt && (
+          <div className="mb-4 rounded-[11px] border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <p className="font-semibold">Pull Request aprovado no GitHub.</p>
+            <p className="mt-1">Aprovação registrada em {formatApprovedAt(reviewApproval.approvedAt)}.</p>
+            {reviewApproval.approvalUrl && (
+              <a
+                href={reviewApproval.approvalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex text-sm underline underline-offset-2 hover:no-underline"
+              >
+                Ver aprovação no GitHub
+              </a>
+            )}
+          </div>
+        )}
+
+        {(approveErrorMessage || reviewApproval.approvalError) && !reviewApproval.approved && (
+          <p className="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+            {approveErrorMessage ?? reviewApproval.approvalError}
           </p>
         )}
 

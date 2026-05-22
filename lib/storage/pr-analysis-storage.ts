@@ -15,6 +15,7 @@ type PullRequestAnalysisStorageKeyInput = {
 export type PullRequestLocalReviewState = {
   isReviewed: boolean;
   lastPublishedAt: string | null;
+  approvedAt: string | null;
 };
 
 function canUseLocalStorage(): boolean {
@@ -145,22 +146,26 @@ export function readPullRequestLocalReviewState(
     return {
       isReviewed: false,
       lastPublishedAt: null,
+      approvedAt: null,
     };
   }
 
   const hasPublishedSuggestion = persistedAnalysis.reviewSuggestions.some(
     (suggestion) => suggestion.published
   );
+  const isApprovedLocally = persistedAnalysis.reviewApproval.approved;
 
-  if (!hasPublishedSuggestion) {
+  if (!hasPublishedSuggestion && !isApprovedLocally) {
     return {
       isReviewed: false,
       lastPublishedAt: null,
+      approvedAt: null,
     };
   }
 
   return {
     isReviewed: true,
     lastPublishedAt: toLastPublishedAt(persistedAnalysis),
+    approvedAt: persistedAnalysis.reviewApproval.approvedAt,
   };
 }

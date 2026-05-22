@@ -7,6 +7,7 @@ type PullRequestAnalysisSectionClientProps = {
   owner: string;
   repo: string;
   pullNumber: number;
+  pullRequestState: "open" | "closed";
 };
 
 const PullRequestAnalysisSection = dynamic(
