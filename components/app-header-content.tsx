@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppBrand } from "@/components/app-brand";
 import { AuthenticatedUserSummary } from "@/components/authenticated-user-summary";
+import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import type { AuthenticatedGitHubUser } from "@/types/github-user";
@@ -28,7 +29,10 @@ export function AppHeaderContent({ authenticatedUser }: AppHeaderContentProps) {
           <ThemeToggle />
 
           {authenticatedUser ? (
-            <AuthenticatedUserSummary user={authenticatedUser} />
+            <>
+              <AuthenticatedUserSummary user={authenticatedUser} />
+              <LogoutButton />
+            </>
           ) : (
             <Link href="/login" className={buttonVariants("secondary")}>
               Entrar
