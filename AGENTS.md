@@ -26,6 +26,25 @@
   - pendências ou limitações
 - Antes de abrir PR, confirme `npm run lint` e `npm run build` sem erros.
 
+### Versionamento e Changelog
+- Toda implementação ou correção de spec deve atualizar a versão no `package.json` conforme Versionamento Semântico 2.0.0 (MAJOR/MINOR/PATCH).
+- Classificação SemVer:
+  - `MAJOR`: mudança incompatível (breaking change).
+  - `MINOR`: nova funcionalidade de spec sem quebra de compatibilidade.
+  - `PATCH`: correção de spec (bugfix/ajuste sem nova capacidade pública).
+- Toda mudança de versão deve atualizar o `CHANGELOG.md` no mesmo PR.
+- O `CHANGELOG.md` deve registrar, no mínimo:
+  - número da versão
+  - data
+  - resumo das mudanças da spec (implementação ou correção)
+- Não permitir merge de implementação/correção de spec sem:
+  - bump de versão
+  - entrada correspondente no `CHANGELOG.md`
+- Regra padrão do repositório:
+  - seguir SemVer estrito mesmo em `0.x`
+  - tratar correção de spec como `PATCH` por padrão
+  - manter fluxo de release contínuo por spec (sem PR separado apenas para release/changelog)
+
 ## Objetivo do projeto
 Este projeto é uma POC local para auxiliar revisão de Pull Requests com apoio de IA.
 
