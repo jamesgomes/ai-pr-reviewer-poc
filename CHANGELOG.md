@@ -7,7 +7,12 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e ve
 ## [Não publicado]
 
 ### Adicionado
-- Estrutura inicial do `CHANGELOG.md` para registro contínuo de mudanças.
+- Sem mudanças registradas no momento.
+
+## [0.1.2] - 2026-05-22
+
+### Alterado
+- Atualização de versão do projeto para `0.1.2`.
 
 ## [0.1.1] - 2026-05-22
 
