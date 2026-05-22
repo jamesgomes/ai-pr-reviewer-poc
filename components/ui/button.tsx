@@ -11,21 +11,21 @@ function joinClasses(...values: Array<string | undefined>): string {
 }
 
 const baseButtonClasses =
-  "inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-primary-focus)] disabled:cursor-not-allowed disabled:opacity-60";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "border-blue-700 bg-blue-700 text-white hover:bg-blue-600 dark:border-blue-500 dark:bg-blue-500 dark:text-zinc-950 dark:hover:bg-blue-400",
+    "border-[var(--app-primary)] bg-[var(--app-primary)] text-[var(--app-on-primary)] hover:bg-[var(--app-primary-focus)] hover:border-[var(--app-primary-focus)]",
   secondary:
-    "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+    "border-[var(--app-divider)] bg-[var(--app-canvas)] text-[var(--app-ink)] hover:bg-[var(--app-canvas-parchment)]",
   ghost:
-    "border-transparent bg-transparent text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900",
+    "border-transparent bg-transparent text-[var(--app-body-muted-strong)] hover:bg-[var(--app-canvas-parchment)]",
   positive:
-    "border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500 dark:text-zinc-950 dark:hover:bg-emerald-400",
+    "border-emerald-600 bg-emerald-600 text-white hover:border-emerald-500 hover:bg-emerald-500",
   danger:
-    "border-red-700 bg-red-700 text-white hover:bg-red-600 dark:border-red-500 dark:bg-red-500 dark:text-zinc-950 dark:hover:bg-red-400",
+    "border-red-600 bg-red-600 text-white hover:border-red-500 hover:bg-red-500",
   apple:
-    "h-auto rounded-full border-zinc-300 bg-white px-6 py-3 text-black shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md dark:border-zinc-500 dark:bg-zinc-100 dark:text-zinc-950",
+    "h-11 border-[var(--app-primary)] bg-[var(--app-primary)] px-6 text-[var(--app-on-primary)] hover:bg-[var(--app-primary-focus)] hover:border-[var(--app-primary-focus)]",
 };
 
 export function buttonVariants(variant: ButtonVariant = "secondary"): string {

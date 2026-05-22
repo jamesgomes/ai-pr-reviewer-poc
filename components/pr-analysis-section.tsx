@@ -406,13 +406,13 @@ export function PullRequestAnalysisSection({
   };
 
   return (
-    <section className="mt-4 rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 sm:px-5">
+    <section className="mt-4 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas)]">
+      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--app-divider)] px-4 py-4 sm:px-5">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-[var(--app-ink)]">
             Análise com IA
           </h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-[var(--app-body-muted)]">
             Analise as alterações deste PR com IA.
           </p>
         </div>
@@ -427,7 +427,7 @@ export function PullRequestAnalysisSection({
 
       <div className="px-4 py-4 sm:px-5">
         {isAnalyzing && (
-          <div className="mb-4 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-4 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-3">
             <LoadingSpinner label="Analisando alterações do PR..." />
           </div>
         )}
@@ -439,32 +439,32 @@ export function PullRequestAnalysisSection({
         )}
 
         {!analysisSummary && !isAnalyzing && !errorMessage && (
-          <p className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          <p className="rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-3 text-sm text-[var(--app-body-muted-strong)]">
             Nenhuma análise foi executada.
           </p>
         )}
 
         {analysisSummary && (
           <div className="space-y-4">
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-4">
+              <h3 className="text-sm font-semibold text-[var(--app-ink)]">
                 Resumo
               </h3>
-              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              <p className="mt-2 text-sm leading-6 text-[var(--app-body-muted-strong)]">
                 {analysisSummary}
               </p>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-semibold text-[var(--app-ink)]">
                 Sugestões ({reviewSuggestions.length})
               </h3>
-              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1 text-xs text-[var(--app-body-muted)]">
                 Pendentes: {suggestionCounters.pending} · Aprovadas: {suggestionCounters.approved} ·
                 Rejeitadas: {suggestionCounters.rejected}
               </p>
               {lastSavedAt && (
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-[var(--app-body-muted)]">
                   Última análise salva localmente: {formatSavedAt(lastSavedAt)}.
                 </p>
               )}
@@ -508,7 +508,7 @@ export function PullRequestAnalysisSection({
                       }}
                       className={
                         isActive
-                          ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                          ? "border-[var(--app-primary)] bg-[#eaf2ff] text-[var(--app-primary)] hover:bg-[#dbeaff] dark:bg-blue-950/40 dark:text-blue-300"
                           : undefined
                       }
                     >
@@ -519,11 +519,11 @@ export function PullRequestAnalysisSection({
               </div>
 
               {reviewSuggestions.length === 0 ? (
-                <p className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                <p className="mt-2 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-3 text-sm text-[var(--app-body-muted-strong)]">
                   Nenhuma sugestão relevante foi identificada para este PR.
                 </p>
               ) : filteredSuggestions.length === 0 ? (
-                <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                <p className="mt-3 rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-3 text-sm text-[var(--app-body-muted-strong)]">
                   Nenhuma sugestão neste filtro.
                 </p>
               ) : (

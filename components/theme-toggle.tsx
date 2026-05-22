@@ -21,9 +21,9 @@ export function ThemeToggle() {
         type="button"
         aria-hidden
         disabled
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/5 text-white/70"
       >
-        <span className="h-3.5 w-3.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+        <span className="h-3.5 w-3.5 rounded-full bg-white/40" />
       </button>
     );
   }
@@ -37,7 +37,7 @@ export function ThemeToggle() {
       type="button"
       onClick={() => setTheme(nextTheme)}
       disabled={isDisabled}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/5 text-white hover:bg-white/15"
       aria-label={`Alternar para tema ${nextTheme === "dark" ? "escuro" : "claro"}`}
       title={`Mudar para tema ${nextTheme === "dark" ? "escuro" : "claro"}`}
     >

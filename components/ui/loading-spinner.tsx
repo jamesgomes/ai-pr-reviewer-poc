@@ -15,14 +15,14 @@ export function LoadingSpinner({
 }: LoadingSpinnerProps) {
   return (
     <div
-      className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+      className="inline-flex items-center gap-2 text-sm text-[var(--app-body-muted)]"
       role="status"
       aria-live="polite"
     >
       <svg
         viewBox="0 0 24 24"
         aria-hidden
-        className={`${spinnerSizeClass[size]} animate-spin text-zinc-500 dark:text-zinc-400`}
+        className={`${spinnerSizeClass[size]} animate-spin text-[var(--app-body-muted)]`}
       >
         <circle
           cx="12"

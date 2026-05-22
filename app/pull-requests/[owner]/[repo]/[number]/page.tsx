@@ -70,8 +70,8 @@ export default async function PullRequestDetailsPage({
 
   if (Number.isNaN(pullNumber)) {
     return (
-      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-        <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+      <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
+        <p className="rounded-[11px] border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
           Número do PR inválido.
         </p>
       </main>
@@ -87,7 +87,7 @@ export default async function PullRequestDetailsPage({
 
   if (!result.ok) {
     return (
-      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+      <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
         <div className="mb-4">
           <Link
             href="/"
@@ -96,7 +96,7 @@ export default async function PullRequestDetailsPage({
             Voltar para a lista
           </Link>
         </div>
-        <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+        <p className="rounded-[11px] border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
           {result.errorMessage}
         </p>
       </main>
@@ -106,7 +106,7 @@ export default async function PullRequestDetailsPage({
   const { pullRequest } = result;
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Link href="/" className={buttonVariants("secondary")}>
           Voltar para a lista
@@ -121,15 +121,15 @@ export default async function PullRequestDetailsPage({
         </a>
       </div>
 
-      <section className="rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <header className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 sm:px-5">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+      <section className="rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas)]">
+        <header className="border-b border-[var(--app-divider)] px-4 py-4 sm:px-5">
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
             {pullRequest.title}
           </h1>
 
           <div className="mt-4 grid gap-2 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-zinc-500 dark:text-zinc-400">Autor</span>
+              <span className="text-[var(--app-body-muted)]">Autor</span>
               <PullRequestAuthor
                 login={pullRequest.authorLogin}
                 avatarUrl={pullRequest.authorAvatarUrl}
@@ -137,19 +137,19 @@ export default async function PullRequestDetailsPage({
               />
             </div>
 
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-zinc-600 dark:text-zinc-400">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[var(--app-body-muted)]">
               <p>
                 Repositório:{" "}
-                <span className="text-zinc-800 dark:text-zinc-200">
+                <span className="text-[var(--app-body-muted-strong)]">
                   {pullRequest.repositoryOwner}/{pullRequest.repositoryName}
                 </span>
               </p>
               <p>
-                PR: <span className="text-zinc-800 dark:text-zinc-200">#{pullRequest.number}</span>
+                PR: <span className="text-[var(--app-body-muted-strong)]">#{pullRequest.number}</span>
               </p>
               <p>
                 Status:{" "}
-                <span className="text-zinc-800 dark:text-zinc-200">
+                <span className="text-[var(--app-body-muted-strong)]">
                   {formatPullRequestState(pullRequest.state)}
                 </span>
               </p>
@@ -159,13 +159,13 @@ export default async function PullRequestDetailsPage({
         </header>
 
         <div className="px-4 py-4 sm:px-5">
-          <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="mb-2 text-lg font-semibold text-[var(--app-ink)]">
             Descrição
           </h2>
           {pullRequest.body?.trim() ? (
             <PullRequestMarkdownPreview content={pullRequest.body} />
           ) : (
-            <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+            <p className="text-sm leading-6 text-[var(--app-body-muted-strong)]">
               Sem descrição informada.
             </p>
           )}

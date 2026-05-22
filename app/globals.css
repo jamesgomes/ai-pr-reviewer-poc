@@ -4,12 +4,46 @@
 
 :root {
   color-scheme: light;
+  --app-primary: #0066cc;
+  --app-primary-focus: #0071e3;
+  --app-primary-on-dark: #2997ff;
+  --app-ink: #1d1d1f;
+  --app-body-muted: #7a7a7a;
+  --app-body-muted-strong: #333333;
+  --app-divider: #e0e0e0;
+  --app-divider-soft: #f0f0f0;
+  --app-canvas: #ffffff;
+  --app-canvas-parchment: #f5f5f7;
+  --app-surface-pearl: #fafafc;
+  --app-surface-dark: #000000;
+  --app-surface-dark-tile: #272729;
+  --app-on-primary: #ffffff;
+  --app-on-dark: #ffffff;
 }
 
 body {
-  @apply bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+  font-family:
+    "SF Pro Text",
+    "SF Pro Display",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  @apply antialiased;
+  background-color: var(--app-canvas);
+  color: var(--app-ink);
 }
 
 .dark {
   color-scheme: dark;
+  --app-ink: #ffffff;
+  --app-body-muted: #cccccc;
+  --app-body-muted-strong: #f3f4f6;
+  --app-divider: #3f3f46;
+  --app-divider-soft: #27272a;
+  --app-canvas: #000000;
+  --app-canvas-parchment: #18181b;
+  --app-surface-pearl: #0f0f10;
+  --app-surface-dark: #000000;
+  --app-surface-dark-tile: #1d1d1f;
+  --app-on-dark: #ffffff;
 }

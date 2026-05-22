@@ -24,15 +24,15 @@ export function AuthenticatedUserSummary({
           alt={`Avatar de ${user.login}`}
           width={24}
           height={24}
-          className="h-6 w-6 rounded-full border border-zinc-200 dark:border-zinc-700"
+          className="h-6 w-6 rounded-full border border-white/30"
           unoptimized
         />
       ) : (
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-white/10 text-xs font-semibold text-white">
           {fallbackLetter}
         </span>
       )}
-      <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <span className="truncate text-sm font-medium text-white">
         {displayName}
       </span>
     </>
@@ -42,7 +42,7 @@ export function AuthenticatedUserSummary({
     return (
       <div
         className={joinClasses(
-          "inline-flex max-w-[220px] items-center gap-2 rounded-md border border-zinc-300 bg-white px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900",
+          "inline-flex max-w-[220px] items-center gap-2 rounded-full border border-white/30 bg-white/5 px-2.5 py-1",
           className
         )}
       >
@@ -57,7 +57,7 @@ export function AuthenticatedUserSummary({
       target="_blank"
       rel="noreferrer"
       className={joinClasses(
-        "inline-flex max-w-[220px] items-center gap-2 rounded-md border border-zinc-300 bg-white px-2 py-1.5 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800",
+        "inline-flex max-w-[220px] items-center gap-2 rounded-full border border-white/30 bg-white/5 px-2.5 py-1 hover:bg-white/15",
         className
       )}
     >

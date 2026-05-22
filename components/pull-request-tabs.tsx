@@ -35,7 +35,7 @@ export function PullRequestTabs({
       <div
         role="tablist"
         aria-label="Filtro de Pull Requests"
-        className="inline-flex overflow-hidden rounded-md border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+        className="inline-flex overflow-hidden rounded-full border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)]"
       >
         {tabOptions.map((tab) => {
           const isActive = tab.value === activeTab;
@@ -50,20 +50,20 @@ export function PullRequestTabs({
               onClick={() => {
                 onChangeTab(tab.value);
               }}
-              className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-500 ${
-                !isLast ? "border-r border-zinc-200 dark:border-zinc-800" : ""
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--app-primary-focus)] ${
+                !isLast ? "border-r border-[var(--app-divider)]" : ""
               } ${
                 isActive
-                  ? "bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  ? "bg-[var(--app-canvas)] text-[var(--app-ink)]"
+                  : "text-[var(--app-body-muted-strong)] hover:bg-[var(--app-divider-soft)] hover:text-[var(--app-ink)]"
               }`}
             >
               <span>{tab.label}</span>
               <span
                 className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold ${
                   isActive
-                    ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                    : "bg-zinc-200/80 text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-300"
+                    ? "bg-[var(--app-divider-soft)] text-[var(--app-body-muted-strong)]"
+                    : "bg-[var(--app-divider)] text-[var(--app-body-muted)]"
                 }`}
               >
                 {countByTab[tab.value]}

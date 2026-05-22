@@ -46,16 +46,16 @@ export function PullRequestListItemRow({
     <li>
       <Link
         href={toPullRequestDetailsPath(pullRequest)}
-        className="grid grid-cols-[1fr_auto] gap-3 px-4 py-3 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-500 dark:hover:bg-zinc-900"
+        className="grid grid-cols-[1fr_auto] gap-3 px-4 py-3 hover:bg-[var(--app-canvas-parchment)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--app-primary-focus)]"
       >
         <div className="min-w-0">
           <div className="flex items-start gap-2">
             <PullRequestStatus state={pullRequest.state} />
-            <h2 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="truncate text-sm font-semibold text-[var(--app-ink)]">
               {pullRequest.title}
             </h2>
             {isMine && (
-              <span className="inline-flex shrink-0 rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+              <span className="inline-flex shrink-0 rounded-full border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] px-2 py-0.5 text-[11px] font-semibold text-[var(--app-body-muted-strong)]">
                 {mineBadgeLabel}
               </span>
             )}
@@ -66,7 +66,7 @@ export function PullRequestListItemRow({
             )}
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--app-body-muted)]">
             <span>
               {pullRequest.repositoryOwner}/{pullRequest.repositoryName}
             </span>
@@ -83,7 +83,7 @@ export function PullRequestListItemRow({
         </div>
 
         <div className="flex min-w-[52px] items-center justify-end">
-          <span className="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="inline-flex items-center gap-1 text-xs text-[var(--app-body-muted)]">
             <svg
               viewBox="0 0 16 16"
               aria-hidden

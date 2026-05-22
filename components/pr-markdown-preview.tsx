@@ -33,24 +33,26 @@ function toDisplayImageSource(source: string | undefined): string | undefined {
 
 const markdownComponents: Components = {
   h1: ({ children }) => (
-    <h1 className="mt-5 text-2xl font-semibold text-zinc-950 first:mt-0 dark:text-zinc-50">
+    <h1 className="mt-5 text-2xl font-semibold text-[var(--app-ink)] first:mt-0">
       {children}
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="mt-5 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{children}</h2>
+    <h2 className="mt-5 text-xl font-semibold text-[var(--app-ink)]">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{children}</h3>
+    <h3 className="mt-4 text-lg font-semibold text-[var(--app-ink)]">{children}</h3>
   ),
-  p: ({ children }) => <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{children}</p>,
+  p: ({ children }) => (
+    <p className="mt-3 text-sm leading-6 text-[var(--app-body-muted-strong)]">{children}</p>
+  ),
   ul: ({ children }) => (
-    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[var(--app-body-muted-strong)]">
       {children}
     </ul>
   ),
   ol: ({ children }) => (
-    <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+    <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-[var(--app-body-muted-strong)]">
       {children}
     </ol>
   ),
@@ -60,15 +62,15 @@ const markdownComponents: Components = {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="text-blue-700 underline underline-offset-2 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+      className="text-[var(--app-primary)] underline underline-offset-2 hover:text-[var(--app-primary-focus)]"
     >
       {children}
     </a>
   ),
-  strong: ({ children }) => <strong className="font-semibold text-zinc-900 dark:text-zinc-100">{children}</strong>,
+  strong: ({ children }) => <strong className="font-semibold text-[var(--app-ink)]">{children}</strong>,
   em: ({ children }) => <em className="italic">{children}</em>,
   pre: ({ children }) => (
-    <pre className="mt-3 overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs leading-5 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
+    <pre className="mt-3 overflow-x-auto rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-3 text-xs leading-5 text-[var(--app-body-muted-strong)]">
       {children}
     </pre>
   ),
@@ -78,24 +80,24 @@ const markdownComponents: Components = {
     }
 
     return (
-      <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+      <code className="rounded bg-[var(--app-divider-soft)] px-1 py-0.5 text-xs text-[var(--app-body-muted-strong)]">
         {children}
       </code>
     );
   },
   blockquote: ({ children }) => (
-    <blockquote className="mt-3 border-l-2 border-zinc-300 pl-3 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+    <blockquote className="mt-3 border-l-2 border-[var(--app-divider)] pl-3 text-sm text-[var(--app-body-muted-strong)]">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="my-4 border-zinc-200 dark:border-zinc-800" />,
+  hr: () => <hr className="my-4 border-[var(--app-divider)]" />,
   img: ({ src, alt }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={toDisplayImageSource(typeof src === "string" ? src : undefined)}
       alt={typeof alt === "string" ? alt : ""}
       loading="lazy"
-      className="mt-3 h-auto max-w-full rounded-md border border-zinc-200 dark:border-zinc-800"
+      className="mt-3 h-auto max-w-full rounded-[11px] border border-[var(--app-divider)]"
     />
   ),
 };

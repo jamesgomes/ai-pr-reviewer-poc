@@ -4,20 +4,20 @@ export function AppFooter() {
   const serviceVersion = `v${packageJson.version}`;
 
   return (
-    <footer className="border-t border-zinc-200/80 py-4 dark:border-zinc-800/80">
+    <footer className="border-t border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] py-5">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <p className="text-xs text-[var(--app-body-muted)]">
           Built by James Gomes · Service {serviceVersion}
         </p>
         <nav
           aria-label="Professional links"
-          className="flex items-center gap-3 text-xs"
+          className="flex items-center gap-3 text-xs leading-7"
         >
           <a
             href="https://github.com/jamesgomes"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="text-[var(--app-body-muted-strong)] underline-offset-2 hover:text-[var(--app-primary)] hover:underline"
           >
             GitHub
           </a>
@@ -25,7 +25,7 @@ export function AppFooter() {
             href="https://www.linkedin.com/in/jamesgomesbr/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="text-[var(--app-body-muted-strong)] underline-offset-2 hover:text-[var(--app-primary)] hover:underline"
           >
             LinkedIn
           </a>

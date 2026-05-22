@@ -213,26 +213,26 @@ export function HomePullRequestsDashboard() {
   }, [activeTab, pullRequestGroupsByTab, state]);
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-      <header className="mb-4">
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
+      <header className="mb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--app-ink)] sm:text-4xl">
             Pull Requests para revisão
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-[var(--app-body-muted)]">
             PRs abertos para revisão, autoria e acompanhamento local.
           </p>
         </div>
       </header>
 
       {state.status === "loading" && (
-        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-4">
           <LoadingSpinner label="Atualizando lista de PRs..." />
         </div>
       )}
 
       {state.status === "error" && (
-        <p className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
+        <p className="rounded-[11px] border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-300">
           {state.message}
         </p>
       )}
@@ -248,7 +248,7 @@ export function HomePullRequestsDashboard() {
           />
 
           {visiblePullRequests.length === 0 ? (
-            <p className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <p className="rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas-parchment)] p-4 text-sm text-[var(--app-body-muted-strong)]">
               {activeTab === "pending"
                 ? "Nenhum PR pendente nesta aba."
                 : activeTab === "mine"
@@ -256,7 +256,7 @@ export function HomePullRequestsDashboard() {
                   : "Nenhum PR revisado localmente ainda."}
             </p>
           ) : (
-            <ul className="overflow-hidden rounded-md border border-zinc-200 bg-white divide-y divide-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:divide-zinc-800">
+            <ul className="overflow-hidden rounded-[11px] border border-[var(--app-divider)] bg-[var(--app-canvas)] divide-y divide-[var(--app-divider)]">
               {visiblePullRequests.map(({ pullRequest, reviewState, mineReason }) => (
                 <PullRequestListItemRow
                   key={pullRequest.id}

@@ -10,11 +10,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="min-h-screen">
+      <body className="min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+          <div className="flex min-h-screen flex-col bg-[var(--app-canvas)]">
             <AppHeader />
-            <div className="flex-1">{children}</div>
+            <div className="flex flex-1 flex-col">{children}</div>
             <AppFooter />
           </div>
         </ThemeProvider>
