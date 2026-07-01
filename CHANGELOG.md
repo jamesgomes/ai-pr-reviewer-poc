@@ -18,7 +18,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e ve
 ### Alterado
 - A rota `analyze` passa a chamar a função de despacho `analyzePullRequest`, sem referenciar um provedor específico.
 - Leitura das instruções de análise extraída para `lib/pr-analysis-instructions.ts`, compartilhada entre os provedores Claude e OpenAI (comportamento da OpenAI mantido).
-- Novas variáveis de ambiente: `AI_PROVIDER` (opcional, padrão `claude`), `ANTHROPIC_API_KEY` (obrigatória para o Claude) e `ANTHROPIC_MODEL` (opcional, padrão `claude-opus-4-8`).
+- Novas variáveis de ambiente: `AI_PROVIDER` (opcional, padrão `claude`), `ANTHROPIC_API_KEY` (obrigatória para o Claude) e `ANTHROPIC_MODEL` (opcional, padrão `claude-sonnet-5`).
+- Análise do Claude com `thinking` desativado para reduzir o consumo de tokens.
 
 ## [0.3.0] - 2026-05-22
 

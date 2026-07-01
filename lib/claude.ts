@@ -6,7 +6,7 @@ import {
   type PullRequestAnalysisResult,
 } from "@/types/pr-analysis";
 
-const DEFAULT_ANTHROPIC_MODEL = "claude-opus-4-8";
+const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5";
 const MAX_ANALYSIS_TOKENS = 16000;
 
 function readRequiredEnv(name: "ANTHROPIC_API_KEY"): string {
@@ -52,6 +52,9 @@ export async function analyzePullRequestWithClaude(
   const response = await client.messages.parse({
     model: getAnthropicModel(),
     max_tokens: MAX_ANALYSIS_TOKENS,
+    // Desativa o "thinking" para minimizar o consumo de tokens. No Sonnet 5 o
+    // adaptive thinking fica ligado por padrão quando o parâmetro é omitido.
+    thinking: { type: "disabled" },
     system: instructions,
     messages: [{ role: "user", content: prompt }],
     output_config: {
