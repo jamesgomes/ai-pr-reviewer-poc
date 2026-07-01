@@ -63,7 +63,8 @@ Fluxo funcional esperado:
 - TypeScript
 - Tailwind CSS
 - Octokit para integração com GitHub
-- OpenAI SDK no servidor
+- Claude (Anthropic) como provedor de IA padrão no servidor via SDK oficial `@anthropic-ai/sdk`
+- OpenAI SDK no servidor como provedor de IA alternativo (selecionável por `AI_PROVIDER`)
 - Zod para validação de payloads estratégicos
 - MongoDB local com driver oficial `mongodb` (planejado na arquitetura)
 

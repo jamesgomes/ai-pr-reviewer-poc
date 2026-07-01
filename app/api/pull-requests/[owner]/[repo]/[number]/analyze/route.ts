@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getAuthenticatedAppUser } from "@/lib/auth";
-import { analyzePullRequestWithOpenAI } from "@/lib/openai";
+import { analyzePullRequest } from "@/lib/ai-provider";
 import { buildPullRequestAnalysisPrompt } from "@/lib/prompts/pr-analysis";
 import { getPullRequestAnalysisContext } from "@/lib/pull-requests";
 import type {
@@ -53,7 +53,7 @@ export async function POST(
       authenticatedUser.accessToken
     );
     const prompt = buildPullRequestAnalysisPrompt(context);
-    const analysis = await analyzePullRequestWithOpenAI(prompt);
+    const analysis = await analyzePullRequest(prompt);
     const payload: PullRequestAnalysisResponse = {
       analysis,
       codeContextFiles: context.files.map((file) => ({

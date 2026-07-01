@@ -9,6 +9,17 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e ve
 ### Adicionado
 - Sem mudanças registradas no momento.
 
+## [0.4.0] - 2026-07-01
+
+### Adicionado
+- Integração com o Claude (Anthropic) como provedor de análise de PR, usando o SDK oficial `@anthropic-ai/sdk` e saída estruturada via `messages.parse()` com `zodOutputFormat`, validada contra `pullRequestAnalysisResultSchema` (spec 027).
+- Nova camada de despacho de provedor (`lib/ai-provider.ts`) que seleciona entre Claude e OpenAI por variável de ambiente, com o Claude como provedor padrão.
+
+### Alterado
+- A rota `analyze` passa a chamar a função de despacho `analyzePullRequest`, sem referenciar um provedor específico.
+- Leitura das instruções de análise extraída para `lib/pr-analysis-instructions.ts`, compartilhada entre os provedores Claude e OpenAI (comportamento da OpenAI mantido).
+- Novas variáveis de ambiente: `AI_PROVIDER` (opcional, padrão `claude`), `ANTHROPIC_API_KEY` (obrigatória para o Claude) e `ANTHROPIC_MODEL` (opcional, padrão `claude-opus-4-8`).
+
 ## [0.3.0] - 2026-05-22
 
 ### Alterado
