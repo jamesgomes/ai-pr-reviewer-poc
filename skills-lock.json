@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "source": "Minutrade/minu-skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "40da541c072b5021f92cc912ba5e0ba27f7ecc97833a1f6173c53b7fcb0378e0"
+    }
+  }
+}
